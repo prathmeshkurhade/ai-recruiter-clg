@@ -1,0 +1,91 @@
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.orm import Session
+
+from app.database import get_db
+from app.schemas.match_result import MatchResultResponse
+from app.models.match_result import MatchResult
+from app.models.job import JobDescription
+from app.models.resume import Resume
+from app.utils.dependencies import get_current_user
+from app.models.user import User
+from app.services.matching_service import rank_candidates
+from app.services.embedding_service import generate_embedding
+
+router = APIRouter()
+
+
+@router.post("/{job_id}/run", response_model=list[MatchResultResponse])
+def run_matching(
+    job_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Trigger matching for all resumes against a job description."""
+    job = db.query(JobDescription).filter(
+        JobDescription.id == job_id,
+        JobDescription.recruiter_id == current_user.id,
+    ).first()
+    if not job:
+        raise HTTPException(status_code=404, detail="Job not found")
+
+    # Generate JD embedding if missing
+    if not job.embedding:
+        job.embedding = generate_embedding(job.description)
+        db.commit()
+
+    # Get all resumes with embeddings for this job
+    resumes = db.query(Resume).filter(Resume.job_id == job_id, Resume.embedding.isnot(None)).all()
+    if not resumes:
+        raise HTTPException(status_code=400, detail="No parsed resumes found. Upload resumes first.")
+
+    resume_data = [
+        {"id": r.id, "embedding": r.embedding, "raw_text": r.raw_text or ""}
+        for r in resumes
+    ]
+
+    # Run ranking
+    ranked = rank_candidates(job.embedding, job.required_skills or [], resume_data)
+
+    # Clear old results for this job and save new ones
+    db.query(MatchResult).filter(MatchResult.job_id == job_id).delete()
+
+    results = []
+    for entry in ranked:
+        resume = next(r for r in resumes if r.id == entry["resume_id"])
+        match = MatchResult(
+            job_id=job_id,
+            resume_id=entry["resume_id"],
+            similarity_score=entry["similarity_score"],
+            skill_matches=entry["skill_matches"],
+        )
+        db.add(match)
+        db.commit()
+        db.refresh(match)
+
+        # Attach candidate info for response
+        match.candidate_name = resume.parsed_data.get("name") if resume.parsed_data else None
+        match.candidate_email = resume.parsed_data.get("email") if resume.parsed_data else None
+        results.append(match)
+
+    return results
+
+
+@router.get("/{job_id}/results", response_model=list[MatchResultResponse])
+def get_results(
+    job_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Get ranked match results for a job."""
+    results = db.query(MatchResult).filter(MatchResult.job_id == job_id).order_by(
+        MatchResult.similarity_score.desc()
+    ).all()
+
+    # Attach candidate info
+    for result in results:
+        resume = db.query(Resume).filter(Resume.id == result.resume_id).first()
+        if resume and resume.parsed_data:
+            result.candidate_name = resume.parsed_data.get("name")
+            result.candidate_email = resume.parsed_data.get("email")
+
+    return results

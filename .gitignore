@@ -1,0 +1,43 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+env/
+*.egg
+
+# Environment
+.env
+backend/.env
+
+# Uploads
+backend/uploads/
+
+# Node
+node_modules/
+frontend/node_modules/
+frontend/dist/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Alembic migrations (auto-generated, machine-specific)
+backend/alembic/versions/*.py
+!backend/alembic/versions/.gitkeep
+
+# ML model cache (downloads automatically)
+.cache/
+sentence-transformers/
+
+# Claude Code
+.claude/
