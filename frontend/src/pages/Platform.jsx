@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { 
   ChevronDown, Search, ArrowRight, CheckCircle2, 
-  Users, BarChart3, HeartHandshake, Link, Globe2, 
+  Users, BarChart3, HeartHandshake, Link as LinkIcon, Globe2, 
   MessageSquare, FileText, PieChart, ShieldCheck
 } from 'lucide-react';
 
@@ -42,9 +43,9 @@ export default function Platform() {
               From sourcing to ranking, our AI-first platform transforms the hiring process, saving time, reducing bias, and surfacing exceptional candidates every time.
             </p>
             <div className="flex flex-wrap gap-4 mt-4">
-              <button className="px-8 py-3.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-md transition-colors shadow-[0_0_15px_rgba(37,99,235,0.4)]">
+              <Link to="/dashboard" className="inline-block px-8 py-3.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-md transition-colors shadow-[0_0_15px_rgba(37,99,235,0.4)]">
                 SEE IT IN ACTION
-              </button>
+              </Link>
               <button className="px-8 py-3.5 border border-white/30 hover:border-white text-white font-semibold rounded-md transition-colors hover:bg-white/5">
                 TALK TO SALES
               </button>
@@ -131,10 +132,7 @@ export default function Platform() {
 
           <div className="grid md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-2 gap-6 max-w-6xl mx-auto text-left">
             {/* Feature Cards */}
-            <div className="bg-white rounded-2xl p-8 shadow-sm border border-slate-100 hover:shadow-md transition-shadow relative overflow-hidden group">
-              <div className="absolute top-6 right-6 text-blue-500 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform">
-                <ArrowRight size={20} />
-              </div>
+            <div className="bg-white rounded-2xl p-8 shadow-sm border border-slate-100 hover:shadow-xl hover:-translate-y-2 transition-all duration-300 relative overflow-hidden group">
               <div className="text-blue-600 text-sm font-bold tracking-wider mb-2">SMART SOURCING & SCREENING</div>
               <h3 className="text-2xl font-bold text-slate-800 mb-4 max-w-sm">Find Top Talent Faster with AI-Recruiting Agents</h3>
               <p className="text-slate-500 leading-relaxed mb-6">
@@ -145,10 +143,7 @@ export default function Platform() {
               </div>
             </div>
 
-            <div className="bg-white rounded-2xl p-8 shadow-sm border border-slate-100 hover:shadow-md transition-shadow relative overflow-hidden group">
-              <div className="absolute top-6 right-6 text-blue-500 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform">
-                <ArrowRight size={20} />
-              </div>
+            <div className="bg-white rounded-2xl p-8 shadow-sm border border-slate-100 hover:shadow-xl hover:-translate-y-2 transition-all duration-300 relative overflow-hidden group">
               <div className="text-blue-600 text-sm font-bold tracking-wider mb-2">CANDIDATE ENGAGEMENT</div>
               <h3 className="text-2xl font-bold text-slate-800 mb-4">Keep Candidates Engaged and Ghosting at Bay</h3>
               <p className="text-slate-500 leading-relaxed mb-12">
@@ -161,10 +156,7 @@ export default function Platform() {
               </div>
             </div>
 
-            <div className="bg-white rounded-2xl p-8 shadow-sm border border-slate-100 hover:shadow-md transition-shadow relative overflow-hidden group">
-              <div className="absolute top-6 right-6 text-blue-500 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform">
-                <ArrowRight size={20} />
-              </div>
+            <div className="bg-white rounded-2xl p-8 shadow-sm border border-slate-100 hover:shadow-xl hover:-translate-y-2 transition-all duration-300 relative overflow-hidden group">
               <div className="text-blue-600 text-sm font-bold tracking-wider mb-2">INTERVIEW LOBBY</div>
               <h3 className="text-2xl font-bold text-slate-800 mb-4 max-w-sm">Automate Your Interview Process Across Time Zones</h3>
               <p className="text-slate-500 leading-relaxed mb-12">
@@ -177,11 +169,8 @@ export default function Platform() {
               </div>
             </div>
 
-            <div className="bg-white rounded-2xl p-8 shadow-sm border border-slate-100 hover:shadow-md transition-shadow relative overflow-hidden group flex flex-col justify-between">
+            <div className="bg-white rounded-2xl p-8 shadow-sm border border-slate-100 hover:shadow-xl hover:-translate-y-2 transition-all duration-300 relative overflow-hidden group flex flex-col justify-between">
               <div>
-                <div className="absolute top-6 right-6 text-blue-500 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform">
-                  <ArrowRight size={20} />
-                </div>
                 <div className="text-blue-600 text-sm font-bold tracking-wider mb-2">REQUISITION MANAGEMENT</div>
                 <h3 className="text-2xl font-bold text-slate-800 mb-4">Effortless requisition creation, approval, and publishing-all in one place.</h3>
                 <p className="text-slate-500 leading-relaxed mb-6">
@@ -211,6 +200,7 @@ export default function Platform() {
             {/* Vertical Line */}
             <div className="absolute left-6 md:left-8 top-10 bottom-10 w-0.5 bg-blue-200"></div>
 
+            {/* Step 1 */}
             <motion.div 
               initial={{ opacity: 0.4, scale: 0.95 }}
               whileInView={{ opacity: 1, scale: 1 }}
@@ -226,8 +216,8 @@ export default function Platform() {
                    <FileText size={32} />
                  </div>
                  <div>
-                   <h3 className="text-xl font-bold text-slate-800 mb-2">Tailored JD's with Ease</h3>
-                   <p className="text-slate-500 text-sm">Kick off with precision. Our AI Agent assists in creating detailed, inclusive job descriptions that attract the right candidates from the get-go.</p>
+                   <h3 className="text-xl font-bold text-slate-800 mb-2">Input (Upload JD & Resumes)</h3>
+                   <p className="text-slate-500 text-sm">Recruiters upload a job description detailing the requirements, and candidate resumes are securely collected in PDF or DOCX formats.</p>
                  </div>
                </div>
             </motion.div>
@@ -245,11 +235,11 @@ export default function Platform() {
                </div>
                <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 flex gap-6 items-center flex-1 transition-transform hover:-translate-y-1 hover:shadow-md">
                  <div className="bg-blue-100 text-blue-500 p-4 rounded-xl hidden sm:block">
-                   <Users size={32} />
+                   <Search size={32} />
                  </div>
                  <div>
-                   <h3 className="text-xl font-bold text-slate-800 mb-2">Find Talent Where It Matters</h3>
-                   <p className="text-slate-500 text-sm">Tap into multiple channels effortlessly. From job boards to internal talent pools, broaden your reach while targeting the best-fit candidates.</p>
+                   <h3 className="text-xl font-bold text-slate-800 mb-2">Parsing</h3>
+                   <p className="text-slate-500 text-sm">Convert complex resume files into clean, structured text utilizing advanced internal tools like pdfplumber and python-docx.</p>
                  </div>
                </div>
             </motion.div>
@@ -266,20 +256,20 @@ export default function Platform() {
                  3
                </div>
                <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 flex gap-6 items-center flex-1 transition-transform hover:-translate-y-1 hover:shadow-md">
-                 <div className="bg-blue-500 text-white p-4 rounded-xl shadow-[0_4px_20px_rgba(59,130,246,0.3)] hidden sm:block">
-                   <BarChart3 size={32} />
+                 <div className="bg-blue-100 text-blue-500 p-4 rounded-xl hidden sm:block">
+                   <ShieldCheck size={32} />
                  </div>
                  <div>
-                   <h3 className="text-xl font-bold text-slate-800 mb-2">Data-Driven Screening</h3>
-                   <p className="text-slate-500 text-sm">Our smart algorithms evaluate skills, experience, and potential, ensuring you spend time on candidates that truly align with your needs.</p>
+                   <h3 className="text-xl font-bold text-slate-800 mb-2">Preprocessing</h3>
+                   <p className="text-slate-500 text-sm">Perform text tokenization, normalization, stopword removal, and deep NLP text cleaning for optimal pipeline consumption.</p>
                  </div>
                </div>
             </motion.div>
 
             {/* Step 4 */}
             <motion.div 
-              initial={{ opacity: 0.3, filter: 'grayscale(100%)' }}
-              whileInView={{ opacity: 1, filter: 'grayscale(0%)' }}
+              initial={{ opacity: 0.4, scale: 0.95 }}
+              whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true, margin: "-100px" }}
               transition={{ duration: 0.6 }}
               className="relative flex items-start gap-8 mb-8 group pl-2"
@@ -288,41 +278,81 @@ export default function Platform() {
                  4
                </div>
                <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 flex gap-6 items-center flex-1 transition-transform hover:-translate-y-1 hover:shadow-md">
-                 <div className="bg-blue-100 text-blue-500 p-4 rounded-xl hidden sm:block">
-                   <HeartHandshake size={32} />
+                 <div className="bg-blue-500 text-white p-4 rounded-xl hidden sm:block">
+                   <Globe2 size={32} />
                  </div>
                  <div>
-                   <h3 className="text-xl font-bold text-slate-800 mb-2">Human-Centered Communication</h3>
-                   <p className="text-slate-500 text-sm">Personalized outreach and timely updates. Keep candidates engaged and informed, letting them feel valued throughout their hiring experience.</p>
+                   <h3 className="text-xl font-bold text-slate-800 mb-2">Embedding Generation</h3>
+                   <p className="text-slate-500 text-sm">Generate transformer-based semantic embeddings (numeric representations) from the normalized text leveraging MiniLM or OpenAI tools.</p>
                  </div>
                </div>
             </motion.div>
 
             {/* Step 5 */}
             <motion.div 
-              initial={{ opacity: 0.3, filter: 'grayscale(100%)' }}
-              whileInView={{ opacity: 1, filter: 'grayscale(0%)' }}
+              initial={{ opacity: 0.4, scale: 0.95 }}
+              whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true, margin: "-100px" }}
               transition={{ duration: 0.6 }}
-              className="relative flex items-start gap-8 mb-4 group pl-2"
+              className="relative flex items-start gap-8 mb-8 group pl-2"
             >
                <div className="w-10 h-10 md:w-12 md:h-12 bg-white border-2 border-blue-200 text-blue-500 font-bold rounded-full flex items-center justify-center flex-shrink-0 z-10 transition-colors group-hover:bg-blue-500 group-hover:text-white group-hover:border-blue-500">
                  5
                </div>
                <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 flex gap-6 items-center flex-1 transition-transform hover:-translate-y-1 hover:shadow-md">
                  <div className="bg-blue-100 text-blue-500 p-4 rounded-xl hidden sm:block">
-                   <Users size={32} />
+                   <LinkIcon size={32} />
                  </div>
                  <div>
-                   <h3 className="text-xl font-bold text-slate-800 mb-2">Seamless Team Alignment</h3>
-                   <p className="text-slate-500 text-sm">Collaborate effectively with hiring managers, collect structured feedback, and make collaborative decisions faster than ever.</p>
+                   <h3 className="text-xl font-bold text-slate-800 mb-2">Matching</h3>
+                   <p className="text-slate-500 text-sm">We compute the cosine similarity between the Job Description embedding and each candidate resume embedding to measure true semantic alignment.</p>
                  </div>
                </div>
             </motion.div>
-            {/* Added a subtle fade out effect to represent the remaining steps */}
-            <div className="mt-8 text-center text-blue-500 font-medium cursor-pointer hover:underline">
-              View all 7 steps ↓
-            </div>
+
+            {/* Step 6 */}
+            <motion.div 
+              initial={{ opacity: 0.4, scale: 0.95 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true, margin: "-100px" }}
+              transition={{ duration: 0.6 }}
+              className="relative flex items-start gap-8 mb-8 group pl-2"
+            >
+               <div className="w-10 h-10 md:w-12 md:h-12 bg-white border-2 border-blue-200 text-blue-500 font-bold rounded-full flex items-center justify-center flex-shrink-0 z-10 transition-colors group-hover:bg-blue-500 group-hover:text-white group-hover:border-blue-500">
+                 6
+               </div>
+               <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 flex gap-6 items-center flex-1 transition-transform hover:-translate-y-1 hover:shadow-md">
+                 <div className="bg-blue-100 text-blue-500 p-4 rounded-xl hidden sm:block">
+                   <BarChart3 size={32} />
+                 </div>
+                 <div>
+                   <h3 className="text-xl font-bold text-slate-800 mb-2">Ranking</h3>
+                   <p className="text-slate-500 text-sm">Sort incoming candidates strictly by similarity score, offering recruiters an explainable skill-match breakdown showing what matched and what was missing.</p>
+                 </div>
+               </div>
+            </motion.div>
+
+            {/* Step 7 */}
+            <motion.div 
+              initial={{ opacity: 0.4, scale: 0.95 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true, margin: "-100px" }}
+              transition={{ duration: 0.6 }}
+              className="relative flex items-start gap-8 mb-4 group pl-2"
+            >
+               <div className="w-10 h-10 md:w-12 md:h-12 bg-blue-500 border-2 border-blue-500 text-white font-bold rounded-full flex items-center justify-center flex-shrink-0 z-10 transition-colors shadow-[0_0_15px_rgba(59,130,246,0.5)]">
+                 7
+               </div>
+               <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 flex gap-6 items-center flex-1 transition-transform hover:-translate-y-1 hover:shadow-md">
+                 <div className="bg-blue-100 text-blue-500 p-4 rounded-xl hidden sm:block">
+                   <Users size={32} />
+                 </div>
+                 <div>
+                   <h3 className="text-xl font-bold text-slate-800 mb-2">Output</h3>
+                   <p className="text-slate-500 text-sm">Display the final ranked lists through the recruiter dashboard web interface, equipping you with transparent scores and deep match details.</p>
+                 </div>
+               </div>
+            </motion.div>
           </div>
         </div>
       </section>

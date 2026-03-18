@@ -9,6 +9,7 @@ import JobForm from "./pages/JobForm";
 import JobDetail from "./pages/JobDetail";
 import Solutions from "./pages/Solutions";
 import Platform from "./pages/Platform";
+import AboutUs from "./pages/AboutUs";
 
 function ProtectedRoute({ children }) {
   const { isAuthenticated } = useAuth();
@@ -37,6 +38,7 @@ function App() {
             <Route path="/" element={<LandingPage />} />
             <Route path="/platform" element={<Platform />} />
             <Route path="/solutions" element={<Solutions />} />
+            <Route path="/about" element={<AboutUs />} />
             <Route path="/login" element={<Login />} />
             <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
             <Route path="/jobs/new" element={<ProtectedRoute><JobForm /></ProtectedRoute>} />

@@ -1,5 +1,6 @@
 import React from 'react';
 import { Award } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 export default function Footer() {
   return (
@@ -29,8 +30,8 @@ export default function Footer() {
           <div>
             <h4 className="font-bold text-slate-900 mb-4">ABOUT US</h4>
             <ul className="space-y-2 text-primeBlue text-sm">
-              <li><a href="#" className="hover:underline">Careers</a></li>
-              <li><a href="#" className="hover:underline">Culture</a></li>
+              <li><Link to="/about" className="hover:underline">Careers</Link></li>
+              <li><Link to="/about" className="hover:underline">Culture</Link></li>
             </ul>
           </div>
           <div>

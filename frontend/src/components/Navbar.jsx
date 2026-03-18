@@ -22,6 +22,7 @@ export default function Navbar() {
       <div className="hidden md:flex items-center gap-8 text-sm font-semibold text-slate-600">
         <Link to="/platform" className="hover:text-primeBlue transition-colors">PLATFORM</Link>
         <Link to="/solutions" className="hover:text-primeBlue transition-colors">SOLUTIONS</Link>
+        <Link to="/about" className="hover:text-primeBlue transition-colors">ABOUT US</Link>
         <a href="/#features" className="hover:text-primeBlue transition-colors">RESUME PARSER</a>
       </div>
 
