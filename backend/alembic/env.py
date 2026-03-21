@@ -10,7 +10,7 @@ from alembic import context
 
 from app.config import settings
 from app.database import Base
-from app.models import User, JobDescription, Resume, MatchResult  # noqa: F401
+from app.models import User, JobDescription, Resume, MatchResult, AuditLog, UserSettings  # noqa: F401
 
 config = context.config
 if config.config_file_name is not None:

@@ -1,57 +1,43 @@
-import React from 'react';
-import { Award } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Shield } from "lucide-react";
 
 export default function Footer() {
   return (
-    <footer className="bg-white border-t border-slate-200 py-12 px-8 mt-auto">
-      <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between gap-12">
-        <div className="space-y-4 max-w-xs">
-          <div className="flex items-center gap-2 text-xl font-bold text-slate-900">
-            <div className="bg-primeBlue text-white p-1.5 rounded-md">
-              <Award className="w-5 h-5" />
-            </div>
-            AI Recruiter
+    <footer className="border-t border-[#1e1e2d] bg-[#0a0a0f] py-12 mt-auto">
+      <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-4 gap-8">
+        <div className="col-span-1 md:col-span-2 space-y-4">
+          <div className="flex items-center gap-2">
+            <Shield className="text-[#00f0ff] w-6 h-6" />
+            <span className="text-xl font-space font-bold text-white tracking-tight">
+              AI<span className="text-[#00f0ff]">Recruiter</span>
+            </span>
           </div>
-          <p className="text-slate-500 text-sm font-medium">
-            Join the AI Revolution! Transform your hiring process and build robust teams faster.
+          <p className="text-gray-400 text-sm max-w-sm">
+            The next-generation hiring intelligence platform. Ethical AI-powered parsing, semantic skill ranking, and automated candidate workflows.
           </p>
         </div>
-        
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 w-full md:w-auto">
-          <div>
-            <h4 className="font-bold text-slate-900 mb-4">RESOURCES</h4>
-            <ul className="space-y-2 text-primeBlue text-sm">
-              <li><a href="#" className="hover:underline">Newsletters</a></li>
-              <li><a href="#" className="hover:underline">Blogs</a></li>
-              <li><a href="#" className="hover:underline">Case Studies</a></li>
-            </ul>
-          </div>
-          <div>
-            <h4 className="font-bold text-slate-900 mb-4">ABOUT US</h4>
-            <ul className="space-y-2 text-primeBlue text-sm">
-              <li><Link to="/about" className="hover:underline">Careers</Link></li>
-              <li><Link to="/about" className="hover:underline">Culture</Link></li>
-            </ul>
-          </div>
-          <div>
-            <h4 className="font-bold text-slate-900 mb-4">CONNECT WITH US</h4>
-            <ul className="space-y-2 text-primeBlue text-sm">
-              <li><a href="#" className="hover:underline">LinkedIn</a></li>
-              <li><a href="#" className="hover:underline">Twitter</a></li>
-            </ul>
-          </div>
-          <div>
-            <h4 className="font-bold text-slate-900 mb-4">POLICY</h4>
-            <ul className="space-y-2 text-primeBlue text-sm">
-              <li><a href="#" className="hover:underline">Privacy Policy</a></li>
-            </ul>
-          </div>
+        <div>
+          <h4 className="text-white font-space font-semibold mb-4">Product</h4>
+          <ul className="space-y-2 text-sm text-gray-400">
+            <li><a href="#" className="hover:text-[#00f0ff] transition-colors">Features</a></li>
+            <li><a href="#" className="hover:text-[#00f0ff] transition-colors">Security</a></li>
+            <li><a href="#" className="hover:text-[#00f0ff] transition-colors">Ethical AI</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4 className="text-white font-space font-semibold mb-4">Company</h4>
+          <ul className="space-y-2 text-sm text-gray-400">
+            <li><a href="#" className="hover:text-[#00f0ff] transition-colors">About</a></li>
+            <li><a href="#" className="hover:text-[#00f0ff] transition-colors">Careers</a></li>
+            <li><a href="#" className="hover:text-[#00f0ff] transition-colors">Contact</a></li>
+          </ul>
         </div>
       </div>
-      <div className="max-w-7xl mx-auto mt-12 pt-8 border-t border-slate-200 flex flex-col md:flex-row items-center justify-between text-sm text-slate-500">
-        <p>© {new Date().getFullYear()} AI Recruiter Pvt Ltd. All Rights Reserved.</p>
-        <a href="#" className="hover:text-primeBlue hover:underline">Terms of use</a>
+      <div className="max-w-7xl mx-auto px-6 mt-12 pt-8 border-t border-[#1e1e2d] text-sm text-gray-500 flex justify-between items-center">
+        <p>© 2026 AIRecruiter OS. All rights reserved.</p>
+        <div className="flex gap-4">
+          <a href="#" className="hover:text-white transition-colors">Privacy</a>
+          <a href="#" className="hover:text-white transition-colors">Terms</a>
+        </div>
       </div>
     </footer>
   );

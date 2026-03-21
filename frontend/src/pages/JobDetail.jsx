@@ -1,226 +1,309 @@
-import { useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
-import api from "../services/api";
-import { ArrowLeft, UploadCloud, Sparkles, CheckCircle2, XCircle, FileText, Medal } from "lucide-react";
+import { Shield, Sparkles, MapPin, Target, RefreshCw, UploadCloud, Trash2, Users } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { useState, useEffect, useRef, useCallback } from "react";
+import axios from "axios";
+import { useParams } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
 export default function JobDetail() {
   const { id } = useParams();
+  const { token } = useAuth();
+  const [candidates, setCandidates] = useState([]);
+  const [resumesPool, setResumesPool] = useState([]);
   const [job, setJob] = useState(null);
-  const [results, setResults] = useState([]);
-  const [uploading, setUploading] = useState(false);
-  const [matching, setMatching] = useState(false);
+  const [loading, setLoading] = useState(true);
+  
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [isMatching, setIsMatching] = useState(false);
+  const [expandedVector, setExpandedVector] = useState(null);
+  const fileInputRef = useRef(null);
+
+  const fetchDetails = useCallback(async () => {
+    try {
+      const headers = { Authorization: `Bearer ${token}` };
+      
+      // 1. Fetch Job Description details
+      const jobRes = await axios.get(`http://localhost:8000/api/jobs/${id}`, { headers });
+      setJob(jobRes.data);
+      
+      // 2. Fetch Base Candidate Pool
+      const poolRes = await axios.get(`http://localhost:8000/api/resumes/${id}`, { headers });
+      setResumesPool(poolRes.data);
+
+      // 3. Fetch Match Rankings
+      const matchesRes = await axios.get(`http://localhost:8000/api/matching/${id}/results`, { headers });
+      
+      const mappedCandidates = matchesRes.data.map(match => {
+        const matchPercent = Math.round(match.similarity_score * 100);
+        
+        let status = "REVIEW_REQD";
+        if (matchPercent > 80) status = "CLEAN_PASS";
+        else if (matchPercent < 50) status = "LOW_MATCH";
+        
+        const missing = [];
+        if (match.skill_matches) {
+          for (const [skill, found] of Object.entries(match.skill_matches)) {
+            if (!found) missing.push(skill);
+          }
+        }
+        
+        return {
+          id: match.resume_id,
+          match: matchPercent,
+          rawScore: match.similarity_score,
+          name: match.candidate_name || match.candidate_email || `CANDIDATE_${match.resume_id}`,
+          status: status,
+          missing: missing,
+          rawSkills: match.skill_matches || {}
+        };
+      });
+      
+      setCandidates(mappedCandidates);
+      setLoading(false);
+    } catch (err) {
+      console.error("Job Detail fetch error:", err);
+      setLoading(false);
+    }
+  }, [id, token]);
 
   useEffect(() => {
-    api.get(`/jobs/${id}`).then((res) => setJob(res.data));
-    api.get(`/matching/${id}/results`).then((res) => setResults(res.data)).catch(() => {});
-  }, [id]);
-
-  const handleUpload = async (e) => {
-    const files = e.target.files;
-    if (!files.length) return;
-
-    setUploading(true);
-    const formData = new FormData();
-    for (const file of files) {
-      formData.append("files", file);
+    if (token && id) {
+      fetchDetails();
     }
-    await api.post(`/resumes/${id}/upload`, formData);
-    setUploading(false);
+  }, [token, id, fetchDetails]);
+
+  const handleFileUpload = async (e) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    const formData = new FormData();
+    for (let i = 0; i < files.length; i++) {
+      formData.append("files", files[i]);
+    }
+
+    setIsProcessing(true);
+    try {
+      const headers = { 
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "multipart/form-data" 
+      };
+      
+      // Only upload, do NOT execute automatic matching here!
+      await axios.post(`http://localhost:8000/api/resumes/${id}/upload`, formData, { headers });
+      
+      // Reload mapping
+      await fetchDetails();
+    } catch (err) {
+      console.error("Process error:", err);
+      alert("Failed to process resumes: " + (err.response?.data?.detail || err.message));
+    } finally {
+      setIsProcessing(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
   };
 
-  const handleMatch = async () => {
-    setMatching(true);
-    const res = await api.post(`/matching/${id}/run`);
-    setResults(res.data);
-    setMatching(false);
+  const handleDeleteResume = async (resumeId) => {
+    if (!window.confirm("Remove this candidate from the pool?")) return;
+    try {
+      const headers = { Authorization: `Bearer ${token}` };
+      await axios.delete(`http://localhost:8000/api/resumes/${resumeId}`, { headers });
+      await fetchDetails(); // Reload map and pools natively
+    } catch (err) {
+      alert("Failed to delete. " + (err.response?.data?.detail || err.message));
+    }
   };
 
-  if (!job) return (
-    <div className="flex-1 flex justify-center items-center bg-slate-50">
-      <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primeBlue"></div>
-    </div>
-  );
+  const handleGenerateMatches = async () => {
+    setIsMatching(true);
+    try {
+      const headers = { Authorization: `Bearer ${token}` };
+      await axios.post(`http://localhost:8000/api/matching/${id}/run`, {}, { headers });
+      await fetchDetails();
+    } catch (err) {
+      alert("Matching failed. " + (err.response?.data?.detail || err.message));
+    } finally {
+      setIsMatching(false);
+    }
+  };
 
-  return (
-    <div className="flex-1 bg-slate-50 py-10 px-4 sm:px-8">
-      <div className="max-w-6xl mx-auto space-y-8">
-        
-        {/* Header & Back Button */}
-        <div>
-          <Link to="/dashboard" className="inline-flex items-center text-sm font-semibold text-slate-500 hover:text-primeBlue transition-colors mb-4">
-            <ArrowLeft className="w-4 h-4 mr-1" />
-            Back to Dashboard
-          </Link>
-          <div className="bg-white rounded-2xl border border-slate-200 p-8 shadow-sm">
-            <div className="flex flex-col md:flex-row md:items-start justify-between gap-6">
-              <div className="flex-1">
-                <h1 className="text-3xl font-extrabold text-slate-900 mb-4">{job.title}</h1>
-                <p className="text-slate-600 leading-relaxed mb-6">{job.description}</p>
-                <div className="flex flex-wrap gap-y-4 gap-x-8 text-sm">
-                  <div>
-                    <span className="text-slate-400 font-semibold block uppercase tracking-wider mb-1">Experience</span>
-                    <span className="font-medium text-slate-800 bg-slate-100 px-3 py-1 rounded-md">{job.experience_level || "Not specified"}</span>
-                  </div>
-                  <div className="flex-1 min-w-[200px]">
-                    <span className="text-slate-400 font-semibold block uppercase tracking-wider mb-2">Required Skills</span>
-                    <div className="flex flex-wrap gap-2">
-                      {job.required_skills?.map((skill, idx) => (
-                         <span key={idx} className="bg-blue-50 text-primeBlue px-3 py-1 rounded-full font-semibold border border-blue-100 text-xs">
-                           {skill}
-                         </span>
-                      )) || <span className="text-slate-500 italic">None</span>}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Two Column Layout for Actions & Results */}
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-          
-          {/* Left Column: Upload & Run Matching */}
-          <div className="lg:col-span-1 space-y-6">
-            <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-              <h3 className="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
-                <UploadCloud className="w-5 h-5 text-primeBlue" />
-                Upload Resumes
-              </h3>
-              <label className="border-2 border-dashed border-slate-300 rounded-xl p-6 flex flex-col items-center justify-center text-center cursor-pointer hover:border-primeBlue hover:bg-slate-50 transition-colors">
-                <UploadCloud className="w-8 h-8 text-slate-400 mb-2" />
-                <span className="text-sm font-medium text-slate-700">Select PDFs or DOCXs</span>
-                <span className="text-xs text-slate-500 mt-1">Drag & drop or click</span>
-                <input 
-                  type="file" 
-                  multiple 
-                  accept=".pdf,.doc,.docx" 
-                  className="hidden" 
-                  onChange={handleUpload}
-                  disabled={uploading}
-                />
-              </label>
-              {uploading && (
-                <div className="mt-4 p-3 bg-blue-50 text-primeBlue text-sm font-medium rounded-lg text-center animate-pulse">
-                  Uploading files...
-                </div>
-              )}
-            </div>
-
-            <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm text-center">
-              <div className="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-full flex items-center justify-center mx-auto mb-3">
-                <Sparkles className="w-6 h-6" />
-              </div>
-              <h3 className="text-lg font-bold text-slate-900 mb-2">Evaluate Candidates</h3>
-              <p className="text-sm text-slate-500 mb-4">Run the AI models to score uploaded resumes.</p>
-              <button 
-                onClick={handleMatch}
-                disabled={matching || uploading}
-                className="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-3 rounded-xl transition-colors disabled:opacity-50 flex justify-center items-center gap-2 shadow-md"
-              >
-                {matching ? (
-                  <>
-                    <svg className="animate-spin -ml-1 mr-2 h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    Analyzing...
-                  </>
-                ) : (
-                  <>Run AI Matching</>
-                )}
-              </button>
-            </div>
-          </div>
-
-          {/* Right Column: Ranked Candidates */}
-          <div className="lg:col-span-3">
-            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col h-full">
-              <div className="p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50">
-                <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2">
-                  <Medal className="w-6 h-6 text-yellow-500" />
-                  Ranked Candidates
-                </h2>
-                <span className="text-sm font-medium px-3 py-1 bg-slate-200 text-slate-700 rounded-lg">
-                  {results.length} Candidates
-                </span>
-              </div>
-
-              {results.length === 0 ? (
-                <div className="p-12 text-center flex-1 flex flex-col justify-center items-center">
-                  <FileText className="w-12 h-12 text-slate-300 mb-4" />
-                  <p className="text-slate-500 text-lg">No results yet.</p>
-                  <p className="text-slate-400 text-sm mt-1">Upload resumes and run matching to see rankings.</p>
-                </div>
-              ) : (
-                <div className="overflow-x-auto p-0 m-0">
-                  <table className="w-full text-left text-sm text-slate-600">
-                    <thead className="text-xs text-slate-500 uppercase bg-slate-50 border-b border-slate-200">
-                      <tr>
-                        <th className="px-6 py-4 font-bold text-center">Rank</th>
-                        <th className="px-6 py-4 font-bold">Candidate</th>
-                        <th className="px-6 py-4 font-bold">Score</th>
-                        <th className="px-6 py-4 font-bold w-1/3">Matched Skills</th>
-                        <th className="px-6 py-4 font-bold w-1/3">Missing Skills</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-100">
-                      {results.map((r, i) => (
-                        <tr key={r.id} className="hover:bg-blue-50/50 transition-colors">
-                          <td className="px-6 py-4 text-center">
-                            <div className={`inline-flex items-center justify-center w-8 h-8 rounded-full font-bold ${
-                              i === 0 ? 'bg-yellow-100 text-yellow-700' :
-                              i === 1 ? 'bg-slate-200 text-slate-700' :
-                              i === 2 ? 'bg-orange-100 text-orange-800' :
-                              'bg-slate-100 text-slate-500'
-                            }`}>
-                              #{i + 1}
-                            </div>
-                          </td>
-                          <td className="px-6 py-4 font-medium text-slate-900 whitespace-nowrap">
-                            {r.candidate_name || `Resume #${r.resume_id}`}
-                          </td>
-                          <td className="px-6 py-4">
-                            <div className="flex items-center gap-2">
-                              <span className={`font-bold text-base ${r.similarity_score > 0.7 ? 'text-green-600' : r.similarity_score > 0.4 ? 'text-amber-500' : 'text-slate-600'}`}>
-                                {(r.similarity_score * 100).toFixed(1)}%
-                              </span>
-                            </div>
-                          </td>
-                          <td className="px-6 py-4">
-                            {r.skill_matches?.matched?.length > 0 ? (
-                              <div className="flex flex-wrap gap-1.5">
-                                {r.skill_matches.matched.map((skill, idx) => (
-                                  <span key={idx} className="inline-flex items-center px-2 py-0.5 text-xs font-medium bg-green-100 text-green-800 rounded">
-                                    <CheckCircle2 className="w-3 h-3 mr-1" />
-                                    {skill}
-                                  </span>
-                                ))}
-                              </div>
-                            ) : <span className="text-slate-400 italic">None</span>}
-                          </td>
-                          <td className="px-6 py-4">
-                            {r.skill_matches?.missing?.length > 0 ? (
-                              <div className="flex flex-wrap gap-1.5">
-                                {r.skill_matches.missing.map((skill, idx) => (
-                                  <span key={idx} className="inline-flex items-center px-2 py-0.5 text-xs font-medium bg-red-100 text-red-800 rounded">
-                                    <XCircle className="w-3 h-3 mr-1" />
-                                    {skill}
-                                  </span>
-                                ))}
-                              </div>
-                            ) : <span className="text-slate-400 italic">None</span>}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-            </div>
-          </div>
+  if (loading) {
+    return (
+      <div className="min-h-[100vh] bg-[#0a0a0f] p-10 font-inter w-full flex items-center justify-center">
+        <div className="flex flex-col items-center">
+          <RefreshCw className="animate-spin text-[#00f0ff] w-10 h-10 mb-4" />
+          <p className="text-gray-400 tracking-widest font-space text-lg">PROJECTING SPATIAL MAP...</p>
         </div>
       </div>
+    );
+  }
+
+  return (
+    <div className="min-h-[100vh] bg-[#0a0a0f] p-10 font-inter w-full">
+      <motion.div initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} className="max-w-6xl mx-auto space-y-8">
+        
+        {/* Header Block */}
+        <div className="bg-[#14141e] border border-[#1e1e2d] rounded-3xl p-8 shadow-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+          <div>
+            <div className="flex items-center gap-3 mb-2">
+              <span className="w-3 h-3 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_10px_rgba(16,185,129,0.8)]" />
+              <p className="text-emerald-400 text-sm font-bold tracking-widest uppercase">PIPELINE CORE</p>
+            </div>
+            <h1 className="text-4xl font-space font-bold text-white tracking-tight">{job?.title || "Unknown Job"}</h1>
+            <p className="text-gray-400 mt-2 flex items-center gap-2">
+              <MapPin size={16}/> {job?.department || "General"} Department
+            </p>
+            <p className="text-gray-500 mt-4 text-sm max-w-2xl">{job?.description}</p>
+          </div>
+          
+          <div className="flex flex-col gap-3 w-full md:w-auto">
+            <input 
+              type="file" 
+              multiple 
+              accept=".pdf,.docx,.txt"
+              ref={fileInputRef} 
+              onChange={handleFileUpload} 
+              className="hidden" 
+            />
+            
+            <button 
+              onClick={() => fileInputRef.current?.click()}
+              disabled={isProcessing}
+              className={`bg-[#1e1e2d] text-white border border-[#2a2a3a] hover:bg-[#2a2a3a] px-6 py-3 rounded-xl transition-all font-semibold flex items-center justify-center gap-2 cursor-pointer shadow-lg hover:shadow-xl ${isProcessing ? 'opacity-50 cursor-not-allowed' : ''}`}
+            >
+              {isProcessing ? <RefreshCw className="animate-spin text-[#00f0ff]" size={18} /> : <UploadCloud size={18} className="text-[#00f0ff]" />}
+              {isProcessing ? "Ingesting Data..." : "Upload Candidates"}
+            </button>
+            <button
+              onClick={handleGenerateMatches}
+              disabled={isMatching || resumesPool.length === 0}
+              className={`bg-[#00f0ff] text-black px-6 py-3 rounded-xl font-bold flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(0,240,255,0.2)] hover:bg-white hover:shadow-[0_0_30px_rgba(255,255,255,0.4)] transition-all cursor-pointer ${isMatching || resumesPool.length === 0 ? 'opacity-50 cursor-not-allowed' : ''}`}
+            >
+              {isMatching ? <RefreshCw className="animate-spin" size={18}/> : <Sparkles size={18} />}
+              {isMatching ? "Calculating Match Vectors..." : "Generate Neural Map"}
+            </button>
+          </div>
+        </div>
+
+        {/* Candidate Pool Section */}
+        <div>
+            <h2 className="text-2xl font-space font-bold text-white mb-6 flex items-center gap-2">
+              <Users className="text-purple-400" /> Candidate Pool
+            </h2>
+            <div className="bg-[#14141e] border border-[#1e1e2d] rounded-2xl overflow-hidden shadow-xl">
+                <table className="w-full text-left font-inter text-sm">
+                    <thead className="bg-[#0a0a0f] text-gray-400 border-b border-[#1e1e2d]">
+                        <tr>
+                            <th className="px-6 py-4 font-semibold uppercase tracking-wider text-xs">Filename</th>
+                            <th className="px-6 py-4 font-semibold uppercase tracking-wider text-xs">Email ID</th>
+                            <th className="px-6 py-4 font-semibold uppercase tracking-wider text-xs w-24 text-center">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-800">
+                        {resumesPool.length === 0 ? (
+                            <tr>
+                              <td colSpan="3" className="px-6 py-8 text-center text-gray-500">
+                                No base resumes mapped. Upload files to securely build the candidate pool.
+                              </td>
+                            </tr>
+                        ) : (
+                            resumesPool.map(res => (
+                                <tr key={res.id} className="hover:bg-white/5 transition-colors group">
+                                    <td className="px-6 py-4 text-white font-mono break-all font-semibold">{res.file_name}</td>
+                                    <td className="px-6 py-4 text-gray-400 break-all">{res.parsed_data?.email || "--"}</td>
+                                    <td className="px-6 py-4 text-center">
+                                        <button onClick={() => handleDeleteResume(res.id)} className="text-red-400 hover:text-red-300 opacity-60 group-hover:opacity-100 transition-opacity p-2 hover:bg-red-500/10 rounded-lg cursor-pointer">
+                                            <Trash2 size={18} />
+                                        </button>
+                                    </td>
+                                </tr>
+                            ))
+                        )}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        {/* Spatial Talent Map List */}
+        <div>
+          <h2 className="text-2xl font-space font-bold text-white mb-6 flex items-center gap-2 mt-10">
+            <Target className="text-[#00f0ff]" /> Spatial Talent Map
+          </h2>
+          <div className="space-y-4">
+            {candidates.length === 0 ? (
+              <div className="bg-[#14141e] border border-[#1e1e2d] rounded-2xl p-6 text-center text-gray-400">
+                Awaiting map generation. Push 'Generate Neural Map' to crunch processing matrix.
+              </div>
+            ) : (
+              candidates.map((cand) => (
+                <motion.div key={cand.id} whileHover={{ x: 5 }} className="bg-[#14141e] border border-[#1e1e2d] rounded-2xl p-6 flex flex-col md:flex-row items-center gap-6 shadow-xl relative overflow-hidden group">
+                  <div className="relative w-20 h-20 flex flex-shrink-0 items-center justify-center rounded-full bg-[#0a0a0f] border-4" style={{ borderColor: cand.match > 90 ? '#00f0ff' : cand.match > 80 ? '#10b981' : '#f59e0b' }}>
+                    <span className="text-xl font-space font-bold text-white">{cand.match}%</span>
+                    <div className="absolute inset-0 rounded-full shadow-[inset_0_0_20px_rgba(0,0,0,0.8)]" />
+                  </div>
+                  
+                  <div className="flex-1 w-full">
+                    <div className="flex justify-between items-start mb-2">
+                      <div>
+                        <h3 className="text-xl font-space font-bold text-white font-mono">{cand.name}</h3>
+                        <p className="text-sm text-gray-400 mt-1 flex items-center gap-2">
+                           Status: <span className="bg-[#0a0a0f] border border-[#1e1e2d] px-2 py-0.5 rounded text-xs text-gray-300 font-mono tracking-wider">{cand.status}</span>
+                        </p>
+                      </div>
+                      <button 
+                        onClick={() => setExpandedVector(expandedVector === cand.id ? null : cand.id)}
+                        className="text-sm font-semibold text-[#00f0ff] border border-[#00f0ff]/30 px-4 py-2 rounded-lg hover:bg-[#00f0ff]/10 transition-colors cursor-pointer focus:outline-none focus:ring-1 focus:ring-[#00f0ff]">
+                         {expandedVector === cand.id ? "Close Vectors" : "View Vectors"}
+                      </button>
+                    </div>
+                    
+                    <div className="mt-4">
+                      <div className="flex justify-between text-xs text-gray-500 mb-1">
+                        <span>Semantic Distance Match</span>
+                        {cand.missing.length > 0 && <span className="text-amber-400">Missing: {cand.missing.slice(0, 3).join(", ")}{cand.missing.length > 3 ? "..." : ""}</span>}
+                      </div>
+                      <div className="w-full bg-[#0a0a0f] rounded-full h-1.5 overflow-hidden">
+                        <motion.div initial={{ width: 0 }} animate={{ width: `${cand.match}%` }} transition={{ duration: 1, delay: 0.2 }} className="h-full bg-gradient-to-r from-purple-500 to-[#00f0ff]" />
+                      </div>
+                    </div>
+
+                    {/* Vector Panel */}
+                    <AnimatePresence>
+                      {expandedVector === cand.id && (
+                        <motion.div 
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: "auto", opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          className="mt-6 pt-6 border-t border-[#1e1e2d] overflow-hidden"
+                        >
+                          <h4 className="text-[#00f0ff] text-xs font-bold uppercase tracking-widest mb-4">Target Proximity Matrix</h4>
+                          <div className="flex flex-col md:flex-row gap-8">
+                            <div>
+                               <p className="text-gray-500 text-xs uppercase mb-2">Cosine Score</p>
+                               <p className="text-white font-mono text-2xl">{cand.rawScore.toFixed(4)}</p>
+                            </div>
+                            <div className="flex-1">
+                                <p className="text-gray-500 text-xs uppercase mb-2">Skill Activation Graph</p>
+                                <div className="flex flex-wrap gap-2">
+                                  {Object.entries(cand.rawSkills).map(([skill, found]) => (
+                                    <span key={skill} className={`px-2 py-1 flex items-center gap-1 text-xs rounded font-mono ${found ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-red-500/10 text-red-500 border border-red-500/20'}`}>
+                                      {found ? '+' : '-'}{skill}
+                                    </span>
+                                  ))}
+                                  {Object.keys(cand.rawSkills).length === 0 && <span className="text-xs text-gray-500">No skill vectors mapped.</span>}
+                                </div>
+                            </div>
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                </motion.div>
+              ))
+            )}
+          </div>
+        </div>
+
+      </motion.div>
     </div>
   );
 }

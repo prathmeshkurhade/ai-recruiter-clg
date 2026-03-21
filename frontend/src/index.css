@@ -1,14 +1,17 @@
 @import "tailwindcss";
 
 @theme {
-  --color-primeBlue: #1a56db;
-  --color-lightBlue: #ebf4ff;
-  --color-darkText: #1e293b;
+  --color-neonCyan: #00f0ff;
+  --color-neonCyanDark: #00b3cc;
+  --color-deepDark: #0a0a0f;
+  --color-panelDark: #14141e;
+  --font-space: "Space Grotesk", sans-serif;
+  --font-inter: "Inter", sans-serif;
 }
 
 @layer base {
   body {
-    @apply bg-white text-gray-900 font-sans;
+    @apply bg-deepDark text-gray-200 font-inter;
   }
 }
 
