@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 import atharvImg from "../assets/Atharv_Lalage.jpeg";
 import prathmeshImg from "../assets/Prathmesh_Kurhade.jpeg";
 import harshalImg from "../assets/Harshal_Kale.jpeg";
-import { Code, BrainCircuit, PenTool } from "lucide-react";
+import { Code, BrainCircuit, PenTool, Github } from "lucide-react";
 
 export default function AboutUs() {
   const team = [
@@ -97,6 +97,33 @@ export default function AboutUs() {
             )
           })}
         </div>
+
+        {/* Contribute Section */}
+        <div className="mt-24 text-center">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="bg-[#14141e] border border-[#1e1e2d] rounded-3xl p-10 max-w-4xl mx-auto shadow-2xl relative overflow-hidden group"
+          >
+            <div className="absolute inset-0 bg-gradient-to-r from-purple-500/5 to-[#00f0ff]/5 opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
+            <Github className="w-12 h-12 text-white mx-auto mb-6 relative z-10" />
+            <h2 className="text-3xl font-space font-bold text-white mb-4 relative z-10">Want to Contribute?</h2>
+            <p className="text-gray-400 mb-8 max-w-xl mx-auto relative z-10">
+              AIRecruiter is an open-source initiative. Join us in building the ethical, AI-driven future of hiring. We welcome contributions, bug reports, and feedback!
+            </p>
+            <a 
+              href="https://github.com/prathmeshkurhade/ai-recruiter-clg" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="relative z-10 inline-flex items-center gap-2 bg-white text-black px-8 py-4 rounded-xl font-bold hover:bg-[#00f0ff] transition-colors duration-300 shadow-lg hover:shadow-[0_0_20px_rgba(0,240,255,0.4)]"
+            >
+              <Github size={20} />
+              View on GitHub
+            </a>
+          </motion.div>
+        </div>
+
       </div>
     </div>
   );

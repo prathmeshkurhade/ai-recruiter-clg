@@ -1,4 +1,5 @@
 import { Shield } from "lucide-react";
+import { Link } from "react-router-dom";
 
 export default function Footer() {
   return (
@@ -26,7 +27,7 @@ export default function Footer() {
         <div>
           <h4 className="text-white font-space font-semibold mb-4">Company</h4>
           <ul className="space-y-2 text-sm text-gray-400">
-            <li><a href="#" className="hover:text-[#00f0ff] transition-colors">About</a></li>
+            <li><Link to="/about" className="hover:text-[#00f0ff] transition-colors">About</Link></li>
             <li><a href="#" className="hover:text-[#00f0ff] transition-colors">Careers</a></li>
             <li><a href="#" className="hover:text-[#00f0ff] transition-colors">Contact</a></li>
           </ul>

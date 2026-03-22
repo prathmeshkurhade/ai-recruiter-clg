@@ -1,101 +1,21 @@
 import { Link } from "react-router-dom";
-import { Users, FileText, CheckCircle, TrendingUp, RefreshCw } from "lucide-react";
+import { Users, FileText, CheckCircle, TrendingUp, RefreshCw, Trash2 } from "lucide-react";
 import { motion } from "framer-motion";
-import { useState, useEffect } from "react";
-import axios from "axios";
-import { useAuth } from "../context/AuthContext";
+import { useJobs } from "../context/JobsContext";
 
 export default function Dashboard() {
-  const [jobs, setJobs] = useState([]);
-  const [statsData, setStatsData] = useState({
-    activeJobs: 0,
-    candidatesProcessed: 0,
-    matchesFound: 0,
-    efficiency: "+0%"
-  });
-  const [loading, setLoading] = useState(true);
-  const { token } = useAuth();
-  
-  useEffect(() => {
-    async function fetchDashboardData() {
+  const { jobs, statsData, loading, deleteJob } = useJobs();
+
+  const handleDelete = async (jobId) => {
+    if (window.confirm("Are you sure you want to delete this job?")) {
       try {
-        const headers = { Authorization: `Bearer ${token}` };
-        
-        // 1. Fetch all root jobs
-        const jobsRes = await axios.get("http://localhost:8000/api/jobs/", { headers });
-        const fetchedJobs = jobsRes.data;
-        
-        let totalCandidates = 0;
-        let totalMatches = 0;
-        
-        // 2. Map over jobs to systematically sum up real tracking data
-        const enrichedJobs = await Promise.all(fetchedJobs.map(async (job) => {
-          let candidatesCount = 0;
-          let matchesCount = 0;
-          
-          try {
-            const resumesRes = await axios.get(`http://localhost:8000/api/resumes/${job.id}`, { headers });
-            candidatesCount = resumesRes.data.length;
-          } catch (e) {
-            console.error(`Error fetching resumes for job ${job.id}`, e);
-          }
-          
-          try {
-            const matchesRes = await axios.get(`http://localhost:8000/api/matching/${job.id}/results`, { headers });
-            matchesCount = matchesRes.data.length;
-          } catch (e) {
-            console.error(`Error fetching matching for job ${job.id}`, e);
-          }
-          
-          totalCandidates += candidatesCount;
-          totalMatches += matchesCount;
-          
-          let statusLabel = "PARSING";
-          let statusColor = "text-purple-400 bg-purple-400/10";
-          
-          if (candidatesCount > 0 && matchesCount === 0) {
-            statusLabel = "MATCHING";
-            statusColor = "text-amber-400 bg-amber-400/10";
-          } else if (candidatesCount > 0 && matchesCount > 0) {
-            statusLabel = "ACTIVE";
-            statusColor = "text-emerald-400 bg-emerald-400/10";
-          }
-          
-          return {
-            ...job,
-            candidatesProcessed: candidatesCount,
-            statusLabel,
-            statusColor
-          };
-        }));
-        
-        setJobs(enrichedJobs);
-        
-        // 3. Compute derived efficiency metrics 
-        let efficiencyStr = "+0%";
-        if (totalCandidates > 0) {
-          const eff = (totalMatches / totalCandidates) * 100;
-          efficiencyStr = `+${eff.toFixed(1)}%`;
-        }
-        
-        setStatsData({
-          activeJobs: fetchedJobs.length,
-          candidatesProcessed: totalCandidates,
-          matchesFound: totalMatches,
-          efficiency: efficiencyStr
-        });
-        
-        setLoading(false);
+        await deleteJob(jobId);
       } catch (err) {
-        console.error("Dashboard multi-fetch error:", err);
-        setLoading(false);
+        console.error("Failed to delete job", err);
+        alert("Failed to delete job.");
       }
     }
-    
-    if (token) {
-      fetchDashboardData();
-    }
-  }, [token]);
+  };
 
   const stats = [
     { label: "Active Jobs", value: statsData.activeJobs, icon: FileText, color: "text-[#00f0ff]", bg: "bg-[#00f0ff]/10" },
@@ -183,8 +103,15 @@ export default function Dashboard() {
                     <td className="px-6 py-4">
                       <span className={`${job.statusColor} px-2 py-1 rounded text-xs tracking-wider`}>{job.statusLabel}</span>
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="px-6 py-4 flex items-center gap-4">
                       <Link to={`/jobs/${job.id}`} className="text-[#00f0ff] hover:text-white transition-colors underline underline-offset-4 decoration-[#00f0ff]/30">Spatial Map</Link>
+                      <button 
+                        onClick={() => handleDelete(job.id)} 
+                        className="text-red-500 hover:text-red-400 transition-colors bg-red-500/10 p-2 rounded-lg ml-auto" 
+                        title="Delete Job"
+                      >
+                        <Trash2 size={16} />
+                      </button>
                     </td>
                   </tr>
                 ))

@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "./context/AuthContext";
+import { JobsProvider } from "./context/JobsContext";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import LandingPage from "./pages/LandingPage";
@@ -36,24 +37,26 @@ function PublicLayout({ children }) {
 function App() {
   return (
     <AuthProvider>
-      <BrowserRouter>
-        <Routes>
-          {/* Public Routes with standard Navbar/Footer */}
-          <Route path="/" element={<PublicLayout><LandingPage /></PublicLayout>} />
-          <Route path="/platform" element={<PublicLayout><Platform /></PublicLayout>} />
-          <Route path="/solutions" element={<PublicLayout><Solutions /></PublicLayout>} />
-          <Route path="/about" element={<PublicLayout><AboutUs /></PublicLayout>} />
-          <Route path="/login" element={<PublicLayout><Login /></PublicLayout>} />
-          <Route path="/register" element={<PublicLayout><Register /></PublicLayout>} />
-          
-          {/* Protected Routes wrapped in the new SidebarLayout */}
-          <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-          <Route path="/jobs/new" element={<ProtectedRoute><JobForm /></ProtectedRoute>} />
-          <Route path="/jobs/:id" element={<ProtectedRoute><JobDetail /></ProtectedRoute>} />
-          <Route path="/settings" element={<ProtectedRoute><EthicalSettings /></ProtectedRoute>} />
-          <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
-        </Routes>
-      </BrowserRouter>
+      <JobsProvider>
+        <BrowserRouter>
+          <Routes>
+            {/* Public Routes with standard Navbar/Footer */}
+            <Route path="/" element={<PublicLayout><LandingPage /></PublicLayout>} />
+            <Route path="/platform" element={<PublicLayout><Platform /></PublicLayout>} />
+            <Route path="/solutions" element={<PublicLayout><Solutions /></PublicLayout>} />
+            <Route path="/about" element={<PublicLayout><AboutUs /></PublicLayout>} />
+            <Route path="/login" element={<PublicLayout><Login /></PublicLayout>} />
+            <Route path="/register" element={<PublicLayout><Register /></PublicLayout>} />
+            
+            {/* Protected Routes wrapped in the new SidebarLayout */}
+            <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+            <Route path="/jobs/new" element={<ProtectedRoute><JobForm /></ProtectedRoute>} />
+            <Route path="/jobs/:id" element={<ProtectedRoute><JobDetail /></ProtectedRoute>} />
+            <Route path="/settings" element={<ProtectedRoute><EthicalSettings /></ProtectedRoute>} />
+            <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+          </Routes>
+        </BrowserRouter>
+      </JobsProvider>
     </AuthProvider>
   );
 }

@@ -18,4 +18,4 @@ class Resume(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     job = relationship("JobDescription", back_populates="resumes")
-    match_results = relationship("MatchResult", back_populates="resume")
+    match_results = relationship("MatchResult", back_populates="resume", cascade="all, delete-orphan")

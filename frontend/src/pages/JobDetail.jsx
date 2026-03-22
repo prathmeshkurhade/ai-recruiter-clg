@@ -8,10 +8,19 @@ import { useAuth } from "../context/AuthContext";
 export default function JobDetail() {
   const { id } = useParams();
   const { token } = useAuth();
-  const [candidates, setCandidates] = useState([]);
-  const [resumesPool, setResumesPool] = useState([]);
-  const [job, setJob] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [candidates, setCandidates] = useState(() => {
+    const cached = sessionStorage.getItem(`job_cands_${id}`);
+    return cached ? JSON.parse(cached) : [];
+  });
+  const [resumesPool, setResumesPool] = useState(() => {
+    const cached = sessionStorage.getItem(`job_pool_${id}`);
+    return cached ? JSON.parse(cached) : [];
+  });
+  const [job, setJob] = useState(() => {
+    const cached = sessionStorage.getItem(`job_meta_${id}`);
+    return cached ? JSON.parse(cached) : null;
+  });
+  const [loading, setLoading] = useState(!sessionStorage.getItem(`job_meta_${id}`));
   
   const [isProcessing, setIsProcessing] = useState(false);
   const [isMatching, setIsMatching] = useState(false);
@@ -59,6 +68,11 @@ export default function JobDetail() {
       });
       
       setCandidates(mappedCandidates);
+      
+      sessionStorage.setItem(`job_meta_${id}`, JSON.stringify(jobRes.data));
+      sessionStorage.setItem(`job_pool_${id}`, JSON.stringify(poolRes.data));
+      sessionStorage.setItem(`job_cands_${id}`, JSON.stringify(mappedCandidates));
+
       setLoading(false);
     } catch (err) {
       console.error("Job Detail fetch error:", err);
