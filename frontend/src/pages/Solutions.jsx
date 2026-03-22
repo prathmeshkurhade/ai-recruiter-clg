@@ -21,7 +21,7 @@ export default function Solutions() {
           <div className="bg-[#14141e] border border-[#1e1e2d] rounded-3xl p-8">
             <Layers className="text-emerald-400 w-10 h-10 mb-6" />
             <h3 className="text-2xl font-space font-bold text-white mb-4">Custom Internal Systems</h3>
-            <p className="text-gray-400">Connect the AIRecruiter Matrix directly into existing HRIS flows (Workday, Greenhouse) utilizing our GraphQL endpoint mesh.</p>
+            <p className="text-gray-400">Connect the HireForge AI Matrix directly into existing HRIS flows (Workday, Greenhouse) utilizing our GraphQL endpoint mesh.</p>
           </div>
         </div>
       </div>

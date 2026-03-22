@@ -25,6 +25,7 @@ export default function JobDetail() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [isMatching, setIsMatching] = useState(false);
   const [expandedVector, setExpandedVector] = useState(null);
+  const [filterType, setFilterType] = useState("ALL");
   const fileInputRef = useRef(null);
 
   const fetchDetails = useCallback(async () => {
@@ -151,6 +152,13 @@ export default function JobDetail() {
     );
   }
 
+  const sortedCandidates = [...candidates].sort((a, b) => b.match - a.match);
+  const displayedCandidates = sortedCandidates.slice(0, 
+    filterType === "TOP_10" ? 10 : 
+    filterType === "TOP_20" ? 20 : 
+    sortedCandidates.length
+  );
+
   return (
     <div className="min-h-[100vh] bg-[#0a0a0f] p-10 font-inter w-full">
       <motion.div initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} className="max-w-6xl mx-auto space-y-8">
@@ -239,16 +247,30 @@ export default function JobDetail() {
 
         {/* Spatial Talent Map List */}
         <div>
-          <h2 className="text-2xl font-space font-bold text-white mb-6 flex items-center gap-2 mt-10">
-            <Target className="text-[#00f0ff]" /> Spatial Talent Map
-          </h2>
+          <div className="flex justify-between items-center mb-6 mt-10">
+            <h2 className="text-2xl font-space font-bold text-white flex items-center gap-2">
+              <Target className="text-[#00f0ff]" /> Spatial Talent Map
+            </h2>
+            
+            {sortedCandidates.length > 0 && (
+              <select 
+                value={filterType} 
+                onChange={(e) => setFilterType(e.target.value)}
+                className="bg-[#14141e] border border-[#1e1e2d] text-white px-4 py-2 rounded-lg outline-none focus:border-[#00f0ff] cursor-pointer"
+              >
+                <option value="ALL">All Resumes ({sortedCandidates.length})</option>
+                <option value="TOP_10">Top 10 Matches</option>
+                <option value="TOP_20">Top 20 Matches</option>
+              </select>
+            )}
+          </div>
           <div className="space-y-4">
-            {candidates.length === 0 ? (
+            {sortedCandidates.length === 0 ? (
               <div className="bg-[#14141e] border border-[#1e1e2d] rounded-2xl p-6 text-center text-gray-400">
                 Awaiting map generation. Push 'Generate Neural Map' to crunch processing matrix.
               </div>
             ) : (
-              candidates.map((cand) => (
+              displayedCandidates.map((cand, index) => (
                 <motion.div key={cand.id} whileHover={{ x: 5 }} className="bg-[#14141e] border border-[#1e1e2d] rounded-2xl p-6 flex flex-col md:flex-row items-center gap-6 shadow-xl relative overflow-hidden group">
                   <div className="relative w-20 h-20 flex flex-shrink-0 items-center justify-center rounded-full bg-[#0a0a0f] border-4" style={{ borderColor: cand.match > 90 ? '#00f0ff' : cand.match > 80 ? '#10b981' : '#f59e0b' }}>
                     <span className="text-xl font-space font-bold text-white">{cand.match}%</span>
@@ -258,7 +280,10 @@ export default function JobDetail() {
                   <div className="flex-1 w-full">
                     <div className="flex justify-between items-start mb-2">
                       <div>
-                        <h3 className="text-xl font-space font-bold text-white font-mono">{cand.name}</h3>
+                        <h3 className="text-xl font-space font-bold text-white font-mono flex items-center gap-3">
+                          <span className="text-[#00f0ff] bg-[#00f0ff]/10 px-2 py-0.5 rounded-md text-lg">#{index + 1}</span> 
+                          {cand.name}
+                        </h3>
                         <p className="text-sm text-gray-400 mt-1 flex items-center gap-2">
                            Status: <span className="bg-[#0a0a0f] border border-[#1e1e2d] px-2 py-0.5 rounded text-xs text-gray-300 font-mono tracking-wider">{cand.status}</span>
                         </p>

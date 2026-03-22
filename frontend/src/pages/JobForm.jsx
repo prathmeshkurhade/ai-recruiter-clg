@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { Sparkles, Save, BrainCircuit, AlertCircle, RefreshCw } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { useJobs } from "../context/JobsContext";
 import axios from "axios";
 
 export default function JobForm() {
@@ -12,6 +13,7 @@ export default function JobForm() {
   const [error, setError] = useState("");
   const navigate = useNavigate();
   const { token } = useAuth();
+  const { refetch } = useJobs();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -32,6 +34,9 @@ export default function JobForm() {
         experience_level: null,
         qualifications: null
       }, { headers });
+      
+      // Refresh the context to show the new job
+      await refetch();
       
       // Redirect to dashboard on success
       navigate("/dashboard");

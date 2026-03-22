@@ -52,7 +52,7 @@ export default function AboutUs() {
             transition={{ delay: 0.1 }}
             className="text-xl text-gray-400 max-w-3xl mx-auto"
           >
-            We are the foundational engineering team behind the AIRecruiter framework. Dedicated to eradicating resume black holes and bringing transparent, neural-driven talent mapping to the modern hiring ecosystem.
+            We are the foundational engineering team behind the HireForge AI framework. Dedicated to eradicating resume black holes and bringing transparent, neural-driven talent mapping to the modern hiring ecosystem.
           </motion.p>
         </div>
 
@@ -110,7 +110,7 @@ export default function AboutUs() {
             <Github className="w-12 h-12 text-white mx-auto mb-6 relative z-10" />
             <h2 className="text-3xl font-space font-bold text-white mb-4 relative z-10">Want to Contribute?</h2>
             <p className="text-gray-400 mb-8 max-w-xl mx-auto relative z-10">
-              AIRecruiter is an open-source initiative. Join us in building the ethical, AI-driven future of hiring. We welcome contributions, bug reports, and feedback!
+              HireForge AI is an open-source initiative. Join us in building the ethical, AI-driven future of hiring. We welcome contributions, bug reports, and feedback!
             </p>
             <a 
               href="https://github.com/prathmeshkurhade/ai-recruiter-clg" 

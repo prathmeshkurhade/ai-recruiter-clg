@@ -22,7 +22,7 @@ export default function LandingPage() {
             Hire Talent with <br/><span className="text-transparent bg-clip-text bg-gradient-to-r from-[#00f0ff] to-purple-400">Semantic Intelligence.</span>
           </h1>
           <p className="mt-6 text-xl text-gray-400 max-w-2xl mx-auto">
-            Stop filtering by keywords. AIRecruiter uses explainable AI vectors to instantly parse, match, and rank thousands of resumes against your job descriptions.
+            Stop filtering by keywords. HireForge AI uses explainable AI vectors to instantly parse, match, and rank thousands of resumes against your job descriptions.
           </p>
           <div className="mt-10 flex items-center justify-center gap-4">
             <Link to="/login" className="group bg-[#00f0ff] text-black px-8 py-3 rounded-xl font-bold text-lg hover:bg-white transition-colors flex items-center gap-2 shadow-[0_0_30px_rgba(0,240,255,0.3)]">

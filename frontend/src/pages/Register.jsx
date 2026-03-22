@@ -52,7 +52,7 @@ export default function Register() {
         
         <div className="text-center mb-8">
           <h2 className="text-3xl font-space font-bold text-white tracking-tight">Initialize Organization</h2>
-          <p className="text-gray-400 mt-2 text-sm">Join the AIRecruiter Matrix</p>
+          <p className="text-gray-400 mt-2 text-sm">Join the HireForge AI Matrix</p>
         </div>
 
         {error && (

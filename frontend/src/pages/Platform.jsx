@@ -4,8 +4,8 @@ export default function Platform() {
   return (
     <div className="min-h-screen pt-32 pb-20 bg-[#0a0a0f] text-gray-200">
       <div className="max-w-7xl mx-auto px-6">
-        <h1 className="text-5xl font-space font-bold text-white mb-6">AIRecruiter Platform</h1>
-        <p className="text-xl text-gray-400 max-w-2xl mb-16">The core engine powering AIRecruiter. Built on advanced NLP models and scalable vector databases.</p>
+        <h1 className="text-5xl font-space font-bold text-white mb-6">HireForge AI Platform</h1>
+        <p className="text-xl text-gray-400 max-w-2xl mb-16">The core engine powering HireForge AI. Built on advanced NLP models and scalable vector databases.</p>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           <div className="bg-[#14141e] border border-[#1e1e2d] rounded-3xl p-8 hover:border-[#00f0ff]/50 transition-colors cursor-pointer">

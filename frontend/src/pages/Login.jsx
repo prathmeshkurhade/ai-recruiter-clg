@@ -55,8 +55,8 @@ export default function Login() {
         </div>
         
         <div className="text-center mb-10">
-          <h2 className="text-3xl font-space font-bold text-white tracking-tight">Access AIRecruiter Core</h2>
-          <p className="text-gray-400 mt-2 text-sm">Authenticate into the AIRecruiter Matrix</p>
+          <h2 className="text-3xl font-space font-bold text-white tracking-tight">Access HireForge AI Core</h2>
+          <p className="text-gray-400 mt-2 text-sm">Authenticate into the HireForge AI Matrix</p>
         </div>
 
         {error && (

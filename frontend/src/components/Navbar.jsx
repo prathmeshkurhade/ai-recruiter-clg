@@ -8,7 +8,7 @@ export default function Navbar() {
         <Link to="/" className="flex items-center gap-2">
           <Shield className="text-[#00f0ff] w-8 h-8" />
           <span className="text-2xl font-space font-bold text-white tracking-tight">
-            AI<span className="text-[#00f0ff]">Recruiter</span>
+            HireForge <span className="text-[#00f0ff]">AI</span>
           </span>
         </Link>
         <div className="hidden md:flex items-center gap-8 text-sm font-medium">

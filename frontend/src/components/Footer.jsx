@@ -9,7 +9,7 @@ export default function Footer() {
           <div className="flex items-center gap-2">
             <Shield className="text-[#00f0ff] w-6 h-6" />
             <span className="text-xl font-space font-bold text-white tracking-tight">
-              AI<span className="text-[#00f0ff]">Recruiter</span>
+              HireForge <span className="text-[#00f0ff]">AI</span>
             </span>
           </div>
           <p className="text-gray-400 text-sm max-w-sm">
@@ -34,7 +34,7 @@ export default function Footer() {
         </div>
       </div>
       <div className="max-w-7xl mx-auto px-6 mt-12 pt-8 border-t border-[#1e1e2d] text-sm text-gray-500 flex justify-between items-center">
-        <p>© 2026 AIRecruiter OS. All rights reserved.</p>
+        <p>© 2026 HireForge AI OS. All rights reserved.</p>
         <div className="flex gap-4">
           <a href="#" className="hover:text-white transition-colors">Privacy</a>
           <a href="#" className="hover:text-white transition-colors">Terms</a>

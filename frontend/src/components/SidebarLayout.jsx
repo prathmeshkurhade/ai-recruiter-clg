@@ -20,7 +20,7 @@ export default function SidebarLayout({ children }) {
           <Link to="/">
             <h1 className="text-2xl font-space font-bold text-white flex items-center gap-2 hover:opacity-80 transition-opacity cursor-pointer">
               <Shield className="text-[#00f0ff]" />
-              AI<span className="text-[#00f0ff]">Recruiter</span>
+              HireForge <span className="text-[#00f0ff]">AI</span>
             </h1>
           </Link>
         </div>
