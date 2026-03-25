@@ -6,6 +6,22 @@ from sklearn.metrics.pairwise import cosine_similarity
 
 from app.services.nlp_processor import extract_skills, normalize_skill
 
+# --- Scoring weights ---
+SEMANTIC_WEIGHT = 0.45   # cosine similarity (embedding-based)
+SKILL_WEIGHT = 0.55      # skill match ratio (keyword-based)
+
+# Cosine similarity from MiniLM rarely exceeds ~0.80 for even near-identical
+# texts, so we rescale the raw score to a 0-100 range that feels intuitive.
+# Scores below MIN are treated as 0; scores above MAX are treated as 100.
+SIM_FLOOR = 0.30
+SIM_CEIL = 0.80
+
+
+def _normalize_sim(raw: float) -> float:
+    """Rescale raw cosine similarity to a 0-1 range using floor/ceil."""
+    clamped = max(SIM_FLOOR, min(raw, SIM_CEIL))
+    return (clamped - SIM_FLOOR) / (SIM_CEIL - SIM_FLOOR)
+
 
 def compute_similarity(job_embedding: list[float], resume_embedding: list[float]) -> float:
     """Compute cosine similarity between a job and resume embedding."""
@@ -76,6 +92,10 @@ def rank_candidates(
     """
     Rank resumes against a job description.
 
+    Uses a weighted combination of:
+    - Semantic similarity (cosine similarity of embeddings, normalized)
+    - Skill match ratio (fraction of required skills found in resume)
+
     Args:
         job_embedding: The job description embedding vector.
         job_skills: List of required skills from the JD.
@@ -86,12 +106,26 @@ def rank_candidates(
     """
     results = []
     for resume in resumes:
-        sim_score = compute_similarity(job_embedding, resume["embedding"])
+        raw_sim = compute_similarity(job_embedding, resume["embedding"])
         skill_match = compute_skill_match(job_skills, resume["raw_text"])
+
+        # Normalized semantic score (0-1, rescaled)
+        norm_sim = _normalize_sim(raw_sim)
+
+        # Skill match ratio (already 0-1)
+        skill_ratio = skill_match["match_ratio"]
+
+        # Combined weighted score
+        if job_skills:
+            combined = (SEMANTIC_WEIGHT * norm_sim) + (SKILL_WEIGHT * skill_ratio)
+        else:
+            # No skills listed — rely entirely on semantic similarity
+            combined = norm_sim
 
         results.append({
             "resume_id": resume["id"],
-            "similarity_score": round(sim_score, 4),
+            "similarity_score": round(combined, 4),
+            "semantic_score": round(norm_sim, 4),
             "skill_matches": skill_match,
         })
 

@@ -1,5 +1,7 @@
 """Embedding generation service using Sentence-Transformers (MiniLM)."""
 
+import re
+
 from sentence_transformers import SentenceTransformer
 
 from app.config import settings
@@ -15,10 +17,19 @@ def get_model() -> SentenceTransformer:
     return _model
 
 
+def _preprocess(text: str) -> str:
+    """Strip noise (emails, URLs, phone numbers, extra whitespace) before embedding."""
+    text = re.sub(r"http\S+|www\.\S+", " ", text)
+    text = re.sub(r"[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}", " ", text)
+    text = re.sub(r"[\+]?[\d\s\-\(\)]{7,15}", " ", text)
+    text = re.sub(r"\s+", " ", text)
+    return text.strip()
+
+
 def generate_embedding(text: str) -> list[float]:
     """Generate a semantic embedding vector for the given text."""
     model = get_model()
-    embedding = model.encode(text)
+    embedding = model.encode(_preprocess(text))
     return embedding.tolist()
 
 

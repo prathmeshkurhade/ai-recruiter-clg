@@ -44,6 +44,11 @@ async def upload_resumes(
         # Parse resume and generate embedding
         parsed = parse_resume(file_path)
         raw_text = parsed["raw_text"]
+        if not raw_text or len(raw_text.strip()) < 20:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Could not extract text from '{file.filename}'. Ensure the PDF is not image-based or corrupted.",
+            )
         skills = extract_skills(raw_text)
         embedding = generate_embedding(raw_text)
 
