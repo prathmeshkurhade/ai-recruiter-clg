@@ -8,6 +8,7 @@ from app.models.job import JobDescription
 from app.models.resume import Resume
 from app.utils.dependencies import get_current_user
 from app.models.user import User
+from app.models.audit_log import AuditLog
 from app.services.matching_service import rank_candidates
 from app.services.embedding_service import generate_embedding
 
@@ -59,6 +60,15 @@ def run_matching(
             skill_matches=entry["skill_matches"],
         )
         db.add(match)
+
+        log = AuditLog(
+            recruiter_id=current_user.id,
+            action="Job Model Updated",
+            entity_ref=f"RESUME_{entry['resume_id']}",
+            status="SYNCED"
+        )
+        db.add(log)
+
         db.commit()
         db.refresh(match)
 

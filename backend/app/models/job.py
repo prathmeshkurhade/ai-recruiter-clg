@@ -20,5 +20,5 @@ class JobDescription(Base):
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 
     recruiter = relationship("User", back_populates="jobs")
-    resumes = relationship("Resume", back_populates="job")
-    match_results = relationship("MatchResult", back_populates="job")
+    resumes = relationship("Resume", back_populates="job", cascade="all, delete-orphan")
+    match_results = relationship("MatchResult", back_populates="job", cascade="all, delete-orphan")

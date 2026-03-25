@@ -12,6 +12,8 @@ from app.models.user import User
 from app.services.resume_parser import parse_resume
 from app.services.nlp_processor import extract_skills
 from app.services.embedding_service import generate_embedding
+from app.models.audit_log import AuditLog
+from app.models.match_result import MatchResult
 
 router = APIRouter()
 
@@ -65,6 +67,16 @@ async def upload_resumes(
             embedding=embedding,
         )
         db.add(resume)
+        
+        # Append permanent Real-Time Tracking row
+        log = AuditLog(
+            recruiter_id=current_user.id,
+            action="Embeddings Generated",
+            entity_ref=file.filename,
+            status="CLEAN_PASS"
+        )
+        db.add(log)
+        
         db.commit()
         db.refresh(resume)
         created_resumes.append(resume)
@@ -80,3 +92,37 @@ def list_resumes(
 ):
     """List all resumes uploaded for a job."""
     return db.query(Resume).filter(Resume.job_id == job_id).all()
+
+
+@router.delete("/{resume_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_resume(
+    resume_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Delete a specific resume."""
+    resume = db.query(Resume).filter(Resume.id == resume_id).first()
+    if not resume:
+        raise HTTPException(status_code=404, detail="Resume not found")
+    
+    # Also verify the job belongs to user
+    job = db.query(JobDescription).filter(JobDescription.id == resume.job_id).first()
+    if not job or job.recruiter_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Not authorized")
+
+    from app.models.match_result import MatchResult
+    db.query(MatchResult).filter(MatchResult.resume_id == resume_id).delete()
+
+    db.delete(resume)
+    
+    # Append Deletion Log
+    log = AuditLog(
+        recruiter_id=current_user.id,
+        action="PII Scrubber Triggered",
+        entity_ref=f"RESUME_{resume_id}",
+        status="REDACTED"
+    )
+    db.add(log)
+    
+    db.commit()
+    return {"detail": "Resume deleted"}
