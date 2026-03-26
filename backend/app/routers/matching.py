@@ -10,7 +10,7 @@ from app.utils.dependencies import get_current_user
 from app.models.user import User
 from app.models.audit_log import AuditLog
 from app.services.matching_service import rank_candidates
-from app.services.embedding_service import generate_embedding
+from app.services.embedding_service import generate_job_embedding
 
 router = APIRouter()
 
@@ -31,7 +31,7 @@ def run_matching(
 
     # Generate JD embedding if missing
     if not job.embedding:
-        job.embedding = generate_embedding(job.description)
+        job.embedding = generate_job_embedding(job.description, job.required_skills)
         db.commit()
 
     # Get all resumes with embeddings for this job

@@ -9,7 +9,7 @@ from app.config import settings
 
 _model = None
 
-# mpnet-base supports up to 384 tokens, but we chunk at ~200 words
+# mpnet-base supports up to 384 tokens; we chunk at ~200 words
 # to ensure no information is lost from long resumes.
 CHUNK_WORD_LIMIT = 200
 
@@ -23,37 +23,17 @@ def get_model() -> SentenceTransformer:
 
 
 def _preprocess(text: str) -> str:
-    """Strip noise (emails, URLs, phone numbers, extra whitespace) before embedding."""
+    """Strip noise (emails, URLs) before embedding.
+
+    Keeps numbers intact — values like '1000+ problems' or '9.09 CGPA'
+    carry meaningful signal for ranking.
+    """
     text = re.sub(r"http\S+|www\.\S+", " ", text)
     text = re.sub(r"[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}", " ", text)
-    text = re.sub(r"[\+]?[\d\s\-\(\)]{7,15}", " ", text)
+    # Only strip standalone phone-like patterns (10+ digits with separators)
+    text = re.sub(r"(?<!\w)[\+]?\d[\d\s\-\(\)]{9,14}\d(?!\w)", " ", text)
     text = re.sub(r"\s+", " ", text)
     return text.strip()
-
-
-def _extract_sections(text: str) -> str:
-    """Reorder text to prioritize key resume sections (skills, experience, education).
-
-    Moves important sections to the front so they aren't lost if the text
-    is long. Falls back to the original text if no sections are detected.
-    """
-    section_patterns = [
-        r"(?i)(skills?|technical skills?|core competenc(?:ies|y))[\s:]*(.+?)(?=\n[A-Z]|\Z)",
-        r"(?i)(experience|work experience|professional experience)[\s:]*(.+?)(?=\n[A-Z]|\Z)",
-        r"(?i)(education|academic|qualifications?)[\s:]*(.+?)(?=\n[A-Z]|\Z)",
-    ]
-
-    prioritized = []
-    for pattern in section_patterns:
-        matches = re.findall(pattern, text, re.DOTALL)
-        for match in matches:
-            prioritized.append(match[1].strip())
-
-    if prioritized:
-        # Put key sections first, then the full text
-        return " ".join(prioritized) + " " + text
-
-    return text
 
 
 def _chunk_text(text: str) -> list[str]:
@@ -80,22 +60,14 @@ def _chunk_text(text: str) -> list[str]:
     return chunks
 
 
-def generate_embedding(text: str) -> list[float]:
-    """Generate a semantic embedding vector for the given text.
-
-    For long texts, splits into overlapping chunks and averages the
-    embeddings so no information is lost to truncation.
-    """
+def _embed_chunks(chunks: list[str]) -> list[float]:
+    """Encode chunks and return a single normalized averaged embedding."""
     model = get_model()
-    cleaned = _preprocess(text)
-    enhanced = _extract_sections(cleaned)
-    chunks = _chunk_text(enhanced)
 
     if len(chunks) == 1:
         embedding = model.encode(chunks[0])
         return embedding.tolist()
 
-    # Encode all chunks and average
     chunk_embeddings = model.encode(chunks)
     avg_embedding = np.mean(chunk_embeddings, axis=0)
     # Normalize to unit vector (important for cosine similarity)
@@ -103,6 +75,29 @@ def generate_embedding(text: str) -> list[float]:
     if norm > 0:
         avg_embedding = avg_embedding / norm
     return avg_embedding.tolist()
+
+
+def generate_embedding(text: str) -> list[float]:
+    """Generate a semantic embedding for resume or generic text."""
+    cleaned = _preprocess(text)
+    chunks = _chunk_text(cleaned)
+    return _embed_chunks(chunks)
+
+
+def generate_job_embedding(description: str, required_skills: list[str] | None = None) -> list[float]:
+    """Generate embedding for a job description.
+
+    Prepends required skills to the description so the embedding
+    captures what the job actually needs — not just the prose.
+    """
+    parts = []
+    if required_skills:
+        parts.append("Required skills: " + ", ".join(required_skills))
+    parts.append(description)
+    combined = " ".join(parts)
+    cleaned = _preprocess(combined)
+    chunks = _chunk_text(cleaned)
+    return _embed_chunks(chunks)
 
 
 def generate_embeddings_batch(texts: list[str]) -> list[list[float]]:

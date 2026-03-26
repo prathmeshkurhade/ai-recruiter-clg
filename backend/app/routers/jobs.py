@@ -16,10 +16,10 @@ def create_job(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    from app.services.embedding_service import generate_embedding
+    from app.services.embedding_service import generate_job_embedding
 
     job = JobDescription(recruiter_id=current_user.id, **job_data.model_dump())
-    job.embedding = generate_embedding(job_data.description)
+    job.embedding = generate_job_embedding(job_data.description, job_data.required_skills)
     db.add(job)
     db.commit()
     db.refresh(job)
