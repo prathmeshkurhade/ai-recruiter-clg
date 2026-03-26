@@ -17,9 +17,15 @@ def create_job(
     current_user: User = Depends(get_current_user),
 ):
     from app.services.embedding_service import generate_job_embedding
+    from app.services.nlp_processor import extract_skills
 
     job = JobDescription(recruiter_id=current_user.id, **job_data.model_dump())
-    job.embedding = generate_job_embedding(job_data.description, job_data.required_skills)
+
+    # Auto-extract skills from description if none were provided
+    if not job.required_skills:
+        job.required_skills = extract_skills(job_data.description)
+
+    job.embedding = generate_job_embedding(job_data.description, job.required_skills)
     db.add(job)
     db.commit()
     db.refresh(job)
