@@ -7,14 +7,15 @@ from sklearn.metrics.pairwise import cosine_similarity
 from app.services.nlp_processor import extract_skills, normalize_skill
 
 # --- Scoring weights ---
-SEMANTIC_WEIGHT = 0.45   # cosine similarity (embedding-based)
-SKILL_WEIGHT = 0.55      # skill match ratio (keyword-based)
+# Bumped semantic weight because mpnet-base-v2 + chunking gives much
+# richer semantic signal than MiniLM did.
+SEMANTIC_WEIGHT = 0.55
+SKILL_WEIGHT = 0.45
 
-# Cosine similarity from MiniLM rarely exceeds ~0.80 for even near-identical
-# texts, so we rescale the raw score to a 0-100 range that feels intuitive.
-# Scores below MIN are treated as 0; scores above MAX are treated as 100.
-SIM_FLOOR = 0.30
-SIM_CEIL = 0.80
+# mpnet-base-v2 produces higher similarity scores than MiniLM,
+# so floor/ceiling are adjusted accordingly.
+SIM_FLOOR = 0.35
+SIM_CEIL = 0.85
 
 
 def _normalize_sim(raw: float) -> float:
