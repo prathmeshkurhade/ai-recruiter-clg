@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.config import settings
-from app.schemas.resume import ResumeResponse
+from app.schemas.resume import ResumeResponse, ResumePatchDecision, ResumePatchIntel
 from app.models.resume import Resume
 from app.models.job import JobDescription
 from app.utils.dependencies import get_current_user
@@ -126,3 +126,45 @@ def delete_resume(
     
     db.commit()
     return {"detail": "Resume deleted"}
+
+
+@router.patch("/{resume_id}/decision", response_model=ResumeResponse)
+def update_decision_node(
+    resume_id: int,
+    data: ResumePatchDecision,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    resume = db.query(Resume).filter(Resume.id == resume_id).first()
+    if not resume:
+        raise HTTPException(status_code=404, detail="Resume not found")
+        
+    job = db.query(JobDescription).filter(JobDescription.id == resume.job_id).first()
+    if not job or job.recruiter_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Not authorized")
+        
+    resume.decision_node = data.decision_node
+    db.commit()
+    db.refresh(resume)
+    return resume
+
+
+@router.patch("/{resume_id}/intel", response_model=ResumeResponse)
+def update_intel_notes(
+    resume_id: int,
+    data: ResumePatchIntel,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    resume = db.query(Resume).filter(Resume.id == resume_id).first()
+    if not resume:
+        raise HTTPException(status_code=404, detail="Resume not found")
+        
+    job = db.query(JobDescription).filter(JobDescription.id == resume.job_id).first()
+    if not job or job.recruiter_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Not authorized")
+        
+    resume.intel_notes = data.intel_notes
+    db.commit()
+    db.refresh(resume)
+    return resume
