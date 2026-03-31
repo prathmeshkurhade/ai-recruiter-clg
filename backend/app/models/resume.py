@@ -15,6 +15,8 @@ class Resume(Base):
     raw_text = Column(Text, nullable=True)
     parsed_data = Column(JSON, nullable=True)  # {name, email, phone, skills, education, experience}
     embedding = Column(JSON, nullable=True)  # stored as list of floats
+    decision_node = Column(String, default="AWAITING_REVIEW")
+    intel_notes = Column(Text, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     job = relationship("JobDescription", back_populates="resumes")

@@ -9,6 +9,8 @@ import axios from "axios";
 export default function JobForm() {
   const [jobTitle, setJobTitle] = useState("");
   const [description, setDescription] = useState("");
+  const [skills, setSkills] = useState("");
+  const [experience, setExperience] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const navigate = useNavigate();
@@ -30,8 +32,8 @@ export default function JobForm() {
       await axios.post("http://localhost:8000/api/jobs/", {
         title: jobTitle,
         description: description,
-        required_skills: [],
-        experience_level: null,
+        required_skills: skills ? skills.split(",").map(skill => skill.trim()).filter(Boolean) : [],
+        experience_level: experience || null,
         qualifications: null
       }, { headers });
       
@@ -66,19 +68,19 @@ export default function JobForm() {
               </div>
             )}
             <div>
-              <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Target Title</label>
+              <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Job Title</label>
               <input 
                 type="text" 
                 value={jobTitle}
                 onChange={(e) => setJobTitle(e.target.value)}
                 className="w-full bg-[#0a0a0f] border border-[#1e1e2d] rounded-xl px-4 py-4 text-white font-space text-lg focus:outline-none focus:border-[#00f0ff] focus:ring-1 focus:ring-[#00f0ff] transition-all shadow-inner"
-                placeholder="e.g. Senior Machine Learning Engineer"
+                placeholder="e.g. Senior Machine Learning Engineer, Backend Developer"
               />
             </div>
             
             <div>
               <div className="flex justify-between items-end mb-2">
-                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">Semantic Prompt</label>
+                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">Job Description</label>
                 <div className="flex items-center gap-1 text-[#00f0ff] text-xs font-bold bg-[#00f0ff]/10 px-2 py-1 rounded">
                   <Sparkles size={12} />
                   GEN-UI ASSIST
@@ -87,9 +89,31 @@ export default function JobForm() {
               <textarea 
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                rows={8}
+                rows={5}
                 className="w-full bg-[#0a0a0f] border border-[#1e1e2d] rounded-xl px-4 py-4 text-gray-300 focus:outline-none focus:border-[#00f0ff] focus:ring-1 focus:ring-[#00f0ff] transition-all resize-none font-inter"
-                placeholder="Describe the role, responsibilities, and ideal candidate persona. The AI will extract embedded skills automatically..."
+                placeholder="Describe the role, detailed responsibilities, and ideal candidate persona..."
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Required Skills</label>
+              <input 
+                type="text" 
+                value={skills}
+                onChange={(e) => setSkills(e.target.value)}
+                className="w-full bg-[#0a0a0f] border border-[#1e1e2d] rounded-xl px-4 py-4 text-white font-space focus:outline-none focus:border-[#00f0ff] focus:ring-1 focus:ring-[#00f0ff] transition-all shadow-inner"
+                placeholder="e.g. Python, React, Data Analysis (Comma separated)"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Experience Level</label>
+              <input 
+                type="text" 
+                value={experience}
+                onChange={(e) => setExperience(e.target.value)}
+                className="w-full bg-[#0a0a0f] border border-[#1e1e2d] rounded-xl px-4 py-4 text-white font-space focus:outline-none focus:border-[#00f0ff] focus:ring-1 focus:ring-[#00f0ff] transition-all shadow-inner"
+                placeholder="e.g. 3-5 Years, Senior Level"
               />
             </div>
 

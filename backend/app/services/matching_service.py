@@ -7,14 +7,14 @@ from sklearn.metrics.pairwise import cosine_similarity
 from app.services.nlp_processor import extract_skills, normalize_skill
 
 # --- Scoring weights ---
-SEMANTIC_WEIGHT = 0.45   # cosine similarity (embedding-based)
-SKILL_WEIGHT = 0.55      # skill match ratio (keyword-based)
+SEMANTIC_WEIGHT = 0.60   # cosine similarity (embedding-based)
+SKILL_WEIGHT = 0.40      # skill match ratio (keyword-based)
 
-# Cosine similarity from MiniLM rarely exceeds ~0.80 for even near-identical
-# texts, so we rescale the raw score to a 0-100 range that feels intuitive.
-# Scores below MIN are treated as 0; scores above MAX are treated as 100.
-SIM_FLOOR = 0.30
-SIM_CEIL = 0.80
+# Cosine similarity from MiniLM rarely exceeds ~0.65 for real-world JD-to-Resume matches,
+# so we rescale the raw score to a 0-1 range that feels intuitive.
+# Scores below MIN are treated as 0; scores above MAX are treated as 1.
+SIM_FLOOR = 0.20
+SIM_CEIL = 0.65
 
 
 def _normalize_sim(raw: float) -> float:
@@ -122,9 +122,13 @@ def rank_candidates(
             # No skills listed — rely entirely on semantic similarity
             combined = norm_sim
 
+        # Apply a square-root curve to boost mid-tier scores into intuitive human distributions
+        # e.g., 0.25 -> 0.50 (50%), 0.49 -> 0.70 (70%)
+        final_score = combined ** 0.5
+
         results.append({
             "resume_id": resume["id"],
-            "similarity_score": round(combined, 4),
+            "similarity_score": round(final_score, 4),
             "semantic_score": round(norm_sim, 4),
             "skill_matches": skill_match,
         })

@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import axios from "axios";
 import { useParams } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import CandidateDossier from "../components/CandidateDossier";
 
 export default function JobDetail() {
   const { id } = useParams();
@@ -25,6 +26,7 @@ export default function JobDetail() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [isMatching, setIsMatching] = useState(false);
   const [expandedVector, setExpandedVector] = useState(null);
+  const [selectedCandidate, setSelectedCandidate] = useState(null);
   const [filterType, setFilterType] = useState("ALL");
   const fileInputRef = useRef(null);
 
@@ -44,6 +46,7 @@ export default function JobDetail() {
       const matchesRes = await axios.get(`http://localhost:8000/api/matching/${id}/results`, { headers });
       
       const mappedCandidates = matchesRes.data.map(match => {
+        const resume = poolRes.data.find(r => r.id === match.resume_id);
         const matchPercent = Math.round(match.similarity_score * 100);
         
         let status = "REVIEW_REQD";
@@ -64,7 +67,11 @@ export default function JobDetail() {
           name: match.candidate_name || match.candidate_email || `CANDIDATE_${match.resume_id}`,
           status: status,
           missing: missing,
-          rawSkills: match.skill_matches || {}
+          rawSkills: match.skill_matches || {},
+          decision_node: resume?.decision_node || "AWAITING_REVIEW",
+          intel_notes: resume?.intel_notes || "",
+          raw_text: resume?.raw_text || "",
+          parsed_data: resume?.parsed_data || {}
         };
       });
       
@@ -86,6 +93,15 @@ export default function JobDetail() {
       fetchDetails();
     }
   }, [token, id, fetchDetails]);
+
+  const handleUpdateCandidate = (resumeId, field, value) => {
+    setCandidates(prev => prev.map(c => 
+      c.id === resumeId ? { ...c, [field]: value } : c
+    ));
+    setResumesPool(prev => prev.map(r => 
+      r.id === resumeId ? { ...r, [field]: value } : r
+    ));
+  };
 
   const handleFileUpload = async (e) => {
     const files = e.target.files;
@@ -285,13 +301,13 @@ export default function JobDetail() {
                           {cand.name}
                         </h3>
                         <p className="text-sm text-gray-400 mt-1 flex items-center gap-2">
-                           Status: <span className="bg-[#0a0a0f] border border-[#1e1e2d] px-2 py-0.5 rounded text-xs text-gray-300 font-mono tracking-wider">{cand.status}</span>
+                           Stage: <span className="bg-[#0a0a0f] border border-[#1e1e2d] px-2 py-0.5 rounded text-xs text-[#00f0ff] font-mono tracking-wider shadow-[0_0_10px_rgba(0,240,255,0.2)]">{cand.decision_node ? cand.decision_node.replace(/_/g, " ") : "AWAITING REVIEW"}</span>
                         </p>
                       </div>
                       <button 
-                        onClick={() => setExpandedVector(expandedVector === cand.id ? null : cand.id)}
+                        onClick={() => setSelectedCandidate(cand)}
                         className="text-sm font-semibold text-[#00f0ff] border border-[#00f0ff]/30 px-4 py-2 rounded-lg hover:bg-[#00f0ff]/10 transition-colors cursor-pointer focus:outline-none focus:ring-1 focus:ring-[#00f0ff]">
-                         {expandedVector === cand.id ? "Close Vectors" : "View Vectors"}
+                         Open Neural Dossier
                       </button>
                     </div>
                     
@@ -343,6 +359,15 @@ export default function JobDetail() {
         </div>
 
       </motion.div>
+      
+      {selectedCandidate && (
+        <CandidateDossier 
+          candidate={selectedCandidate} 
+          token={token} 
+          onClose={() => setSelectedCandidate(null)} 
+          onUpdateCandidate={handleUpdateCandidate}
+        />
+      )}
     </div>
   );
 }
