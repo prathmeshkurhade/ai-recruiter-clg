@@ -14,6 +14,8 @@ from app.services.nlp_processor import extract_skills
 from app.services.embedding_service import generate_embedding
 from app.models.audit_log import AuditLog
 from app.models.match_result import MatchResult
+from app.models.settings import UserSettings
+from app.utils.masking import apply_identity_mask
 
 router = APIRouter()
 
@@ -90,8 +92,36 @@ def list_resumes(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    """List all resumes uploaded for a job."""
-    return db.query(Resume).filter(Resume.job_id == job_id).all()
+    resumes = db.query(Resume).filter(Resume.job_id == job_id).all()
+    
+    settings = db.query(UserSettings).filter(UserSettings.user_id == current_user.id).first()
+    masking_enabled = settings and settings.identity_masking
+    
+    results = []
+    for r in resumes:
+        is_fast_tracked = r.decision_node == "ENGAGE_FAST_TRACK"
+        
+        # We transform to dict manually before pydantic parses it
+        r_dict = {
+            "id": r.id,
+            "job_id": r.job_id,
+            "file_name": r.file_name,
+            "parsed_data": dict(r.parsed_data) if r.parsed_data else {},
+            "raw_text": r.raw_text,
+            "decision_node": r.decision_node,
+            "intel_notes": r.intel_notes,
+            "created_at": r.created_at
+        }
+        
+        if masking_enabled and not is_fast_tracked:
+            new_parsed, new_raw = apply_identity_mask(r_dict["parsed_data"], r_dict["raw_text"])
+            r_dict["parsed_data"] = new_parsed
+            r_dict["raw_text"] = new_raw
+            r_dict["file_name"] = f"VECTOR_PAYLOAD_{r.id}.pdf"
+            
+        results.append(r_dict)
+        
+    return results
 
 
 @router.delete("/{resume_id}", status_code=status.HTTP_204_NO_CONTENT)

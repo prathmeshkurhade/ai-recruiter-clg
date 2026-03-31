@@ -11,6 +11,8 @@ from app.models.user import User
 from app.models.audit_log import AuditLog
 from app.services.matching_service import rank_candidates
 from app.services.embedding_service import generate_embedding
+from app.models.settings import UserSettings
+from app.utils.masking import apply_identity_mask
 
 router = APIRouter()
 
@@ -91,11 +93,21 @@ def get_results(
         MatchResult.similarity_score.desc()
     ).all()
 
+    # Check ethical settings
+    settings = db.query(UserSettings).filter(UserSettings.user_id == current_user.id).first()
+    masking_enabled = settings and settings.identity_masking
+
     # Attach candidate info
     for result in results:
         resume = db.query(Resume).filter(Resume.id == result.resume_id).first()
         if resume and resume.parsed_data:
-            result.candidate_name = resume.parsed_data.get("name")
-            result.candidate_email = resume.parsed_data.get("email")
+            is_fast_tracked = resume.decision_node == "ENGAGE_FAST_TRACK"
+            if masking_enabled and not is_fast_tracked:
+                masked_data, _ = apply_identity_mask(resume.parsed_data, "")
+                result.candidate_name = masked_data.get("name")
+                result.candidate_email = masked_data.get("email")
+            else:
+                result.candidate_name = resume.parsed_data.get("name")
+                result.candidate_email = resume.parsed_data.get("email")
 
     return results

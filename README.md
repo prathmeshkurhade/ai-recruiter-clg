@@ -1,172 +1,78 @@
-# AI-Powered Resume Screening & Job Matching System
+<div align="center">
+  <img src="https://img.shields.io/badge/Status-Beta-purple" alt="Beta">
+  <img src="https://img.shields.io/badge/Python-3.10+-blue" alt="Python">
+  <img src="https://img.shields.io/badge/React-18-cyan" alt="React">
+  <img src="https://img.shields.io/badge/Database-PostgreSQL-blue" alt="PostgreSQL">
+  <h1>HireForge AI : The Ethical Kinetic OS</h1>
+  <p>An open-source, AI-driven recruitment platform built with Semantic Vector similarity matching and an active Zero-Bias Identity Scrubber.</p>
+</div>
 
-An intelligent recruitment tool that uses **NLP and transformer-based semantic embeddings** to automatically parse, match, and rank candidate resumes against job descriptions — replacing manual keyword-based filtering with AI-powered semantic understanding.
+---
 
-## How It Works
+## 🚀 The Architecture
+Most Applicant Tracking Systems (ATS) use simple boolean keyword scrapers to parse resumes. **HireForge AI** completely re-engineers this pipeline using **Deep NLP** and **HuggingFace SentenceTransformers** to map candidates conceptually onto a multi-dimensional spatial grid, allowing recruiters to discover tangential skills that standard scanners miss.
 
-1. **Recruiter creates a job description** → system generates a semantic embedding (384-dim vector) using MiniLM
-2. **Recruiter uploads resumes (PDF/DOCX)** → system parses text, extracts skills/email/phone, generates embeddings
-3. **Recruiter clicks "Run Matching"** → system computes cosine similarity between JD and each resume, ranks candidates, shows matched/missing skills
+Additionally, we designed the entire frontend layer around **Kinetic UI/UX** principles (Framer Motion, Glassmorphism) and built an interception layer that systematically enforces Ethical AI compliance by scrubbing identifiers before they ever reach the frontend cache.
 
-The AI model (`all-MiniLM-L6-v2`) runs **locally** — no API keys needed, no external AI service calls.
+## ⚡ Core Engineering Features
 
-> For detailed technical documentation (how embeddings work, cosine similarity math, architecture deep-dive), see [`PROJECT_DOCUMENTATION.md`](./PROJECT_DOCUMENTATION.md)
+### 1. Generative Semantic Matching Engine
+The backend doesn't search for the word `"React"`. It converts resumes and Job Descriptions into a dense `384-dimensional` array using `all-MiniLM-L6-v2`. It then utilizes `cosine_similarity` to calculate the mathematical distance between a candidate's *intent* and the job requirements, assigning a flawless semantic match percentage.
 
-## Tech Stack
+### 2. Zero-Bias Identity Injection (NLP Masking)
+Implicit bias destroys fair sourcing. When the `identity_masking` setting is toggled, our backend physically intercepts the HTTP response payloads. Using complex deep-regex and NLP scrub passes, the AI securely masks real names (e.g., replacing with `CANDIDATE_VECTOR_8241`), telephone networks, emails, and gender pronouns with `[REDACTED_SECURE_COMMS]` before Redux state ingestion.
 
-| Layer | Technology |
-|-------|-----------|
-| Frontend | React.js (Vite) |
-| Backend | FastAPI (Python) |
-| Database | PostgreSQL (Neon - serverless) |
-| ML Model | Sentence-Transformers (`all-MiniLM-L6-v2`) — runs locally |
-| Similarity | scikit-learn (cosine similarity) |
-| Resume Parsing | pdfplumber (PDF), python-docx (DOCX) |
-| Auth | JWT + bcrypt |
+### 3. The Holographic Neural Dossier
+We rejected the sluggishness of traditional Kanban boards. Recruiters interact via a sliding, dynamic component (`CandidateDossier.jsx`) that allows one-click routing to nodes like `AWAITING_REVIEW` or `ENGAGE_FAST_TRACK`. Moving a candidate to Fast-Track automatically securely unmasks their true identity without a page reload. It also features a **Synaptic Log** that performs asynchronous `PATCH` saves to the NeonDB Postgres cluster.
 
-## Prerequisites
+### 4. Chaos Parsing Pipeline
+Utilizing PDF extraction ecosystems (`pdfplumber`), the ingestion mesh tears through unstructured nested PDFs and natively maps chaotic text into pristine JSON schemas. 
 
-- **Python 3.10+**
-- **Node.js 18+**
-- **PostgreSQL database** (we use [Neon](https://neon.tech) — free serverless Postgres)
+---
 
-## Setup & Run
+## 🛠 Tech Stack
 
-### 1. Clone the repo
+- **Backend (Python)**: `FastAPI`, `SQLAlchemy`, `Alembic`, `SentenceTransformers`, `PyJWT`
+- **Database**: `NeonDB` (PostgreSQL), `PostGIS` Vector extensions (simulated)
+- **Frontend (JavaScript)**: `Vite`, `React 18`, `TailwindCSS`
+- **Animation UX**: `Framer Motion`, `Lucide React`
 
+---
+
+## ⚙️ Installation & Operation (Local Environment)
+
+### 1. Clone the Matrix
 ```bash
-git clone https://github.com/your-username/ai-resume-screener.git
-cd ai-resume-screener
+git clone https://github.com/your-username/hireforge-ai.git
+cd hireforge-ai
 ```
 
-### 2. Backend Setup
-
+### 2. Booting the Backend (FastAPI Core)
+The backend pipeline requires Python 3.9+. We highly recommend creating a virtual environment.
 ```bash
 cd backend
-
-# Create virtual environment
 python -m venv venv
+# Windows: venv\\Scripts\\activate
+# Mac/Linux: source venv/bin/activate
 
-# Activate it
-venv\Scripts\activate        # Windows
-# source venv/bin/activate   # macOS/Linux
-
-# Install dependencies
 pip install -r requirements.txt
 ```
-
-### 3. Database Setup
-
-1. Go to [neon.tech](https://neon.tech) and create a free project
-2. Copy the connection string from the Neon dashboard
-3. Create your `.env` file:
-
+Make sure you generate a `.env` file containing your `DATABASE_URL` (NeonDB) and your JWT `SECRET_KEY`.
 ```bash
-cp .env.example .env
+# Run the uvicorn server mapping
+uvicorn app.main:app --reload --port 8000
 ```
 
-4. Paste your Neon connection string and set a JWT secret in `.env`:
-
-```env
-DATABASE_URL=postgresql://user:password@ep-your-project.region.aws.neon.tech/dbname?sslmode=require
-JWT_SECRET_KEY=any-random-string-here
-```
-
-5. Run database migrations:
-
-```bash
-alembic revision --autogenerate -m "initial"
-alembic upgrade head
-```
-
-### 4. Start the Backend
-
-```bash
-uvicorn app.main:app --reload
-```
-
-Backend runs at **http://localhost:8000**
-API docs at **http://localhost:8000/docs**
-
-> **Note:** The first time you upload resumes or create a job, the MiniLM model (~80 MB) will download automatically. This is a one-time download — it gets cached locally.
-
-### 5. Frontend Setup (new terminal)
-
+### 3. Booting the Frontend (React OS)
+Open a new terminal session.
 ```bash
 cd frontend
-
-# Install dependencies
 npm install
-
-# Start dev server
 npm run dev
 ```
+Navigate to `http://localhost:5173` to interact with the Neural Dossier Interface.
 
-Frontend runs at **http://localhost:5173**
+---
 
-## Usage
-
-1. **Sign up** — create a recruiter account
-2. **Create a Job Description** — add title, description, required skills (comma-separated), experience level
-3. **Upload Resumes** — go to the job detail page, upload PDF/DOCX files (supports bulk upload)
-4. **Run Matching** — click "Run Matching" to see ranked candidates with similarity scores and skill breakdowns
-
-## Project Structure
-
-```
-├── backend/
-│   ├── app/
-│   │   ├── main.py              # FastAPI entry point + CORS
-│   │   ├── config.py            # Settings (DB URL, JWT, model name)
-│   │   ├── database.py          # SQLAlchemy engine + session
-│   │   ├── models/              # ORM models (User, Job, Resume, MatchResult)
-│   │   ├── schemas/             # Pydantic request/response schemas
-│   │   ├── routers/
-│   │   │   ├── auth.py          # Signup/Login (JWT)
-│   │   │   ├── jobs.py          # Job description CRUD
-│   │   │   ├── resumes.py       # Resume upload + auto-parsing
-│   │   │   └── matching.py      # Run matching + get ranked results
-│   │   ├── services/
-│   │   │   ├── auth_service.py       # Password hashing + JWT
-│   │   │   ├── resume_parser.py      # PDF/DOCX text extraction
-│   │   │   ├── nlp_processor.py      # Skill extraction (100+ skills with variants)
-│   │   │   ├── embedding_service.py  # MiniLM embedding generation
-│   │   │   └── matching_service.py   # Cosine similarity + skill matching
-│   │   └── utils/
-│   │       └── dependencies.py  # Auth middleware
-│   ├── requirements.txt
-│   ├── alembic.ini
-│   └── .env.example
-├── frontend/
-│   └── src/
-│       ├── pages/               # Login, Dashboard, JobForm, JobDetail
-│       ├── services/api.js      # Axios client with auth interceptor
-│       └── context/             # Auth state management
-├── PROJECT_DOCUMENTATION.md     # Detailed AI/ML documentation
-└── README.md
-```
-
-## API Endpoints
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/api/auth/signup` | Create account |
-| POST | `/api/auth/login` | Login (returns JWT) |
-| POST | `/api/jobs/` | Create job description |
-| GET | `/api/jobs/` | List your jobs |
-| GET | `/api/jobs/{id}` | Get job details |
-| PUT | `/api/jobs/{id}` | Update job |
-| DELETE | `/api/jobs/{id}` | Delete job |
-| POST | `/api/resumes/{job_id}/upload` | Upload resumes (PDF/DOCX) |
-| GET | `/api/resumes/{job_id}` | List resumes for a job |
-| POST | `/api/matching/{job_id}/run` | Run AI matching |
-| GET | `/api/matching/{job_id}/results` | Get ranked results |
-
-## Team
-
-- Harshal Kale (Roll: 35124)
-- Prathmesh Kurhade (Roll: 35135)
-- Atharv Lalage (Roll: 35136)
-
-**Guide:** Ms. S. C. Nahatkar
-**Academic Year:** 2025-26, Semester II, Batch L13
+## 🔒 License & Open Source
+This project is open-source and released under the **MIT License**. It was constructed as an advanced AI Architecture portfolio piece. Contributions and pull requests are highly encouraged to expand the capabilities of the Generative Vector Engine.
