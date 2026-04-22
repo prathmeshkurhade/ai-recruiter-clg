@@ -4,7 +4,9 @@ import re
 import numpy as np
 from sklearn.metrics.pairwise import cosine_similarity
 
+from app.config import settings
 from app.services.nlp_processor import extract_skills, normalize_skill
+from app.services.llm_ranker import rerank_with_llm
 
 # --- Scoring weights ---
 SEMANTIC_WEIGHT = 0.60   # cosine similarity (embedding-based)
@@ -88,49 +90,85 @@ def rank_candidates(
     job_embedding: list[float],
     job_skills: list[str],
     resumes: list[dict],
+    job_description: str | None = None,
 ) -> list[dict]:
     """
-    Rank resumes against a job description.
+    Two-stage ranking of resumes against a job description.
 
-    Uses a weighted combination of:
-    - Semantic similarity (cosine similarity of embeddings, normalized)
-    - Skill match ratio (fraction of required skills found in resume)
+    Stage 1 (embeddings + keywords): cheap local score computed for every resume.
+    Stage 2 (Gemini re-rank): top-N from stage 1 are sent to the LLM in one
+    batched call. The LLM understands proficiency levels (e.g., Codeforces
+    ratings, CodeChef stars, problems-solved counts) that embeddings cannot.
+
+    Final score blends the two when the LLM succeeds, or falls back to the
+    embedding-only score if the LLM is unavailable.
 
     Args:
         job_embedding: The job description embedding vector.
         job_skills: List of required skills from the JD.
         resumes: List of dicts with keys: id, embedding, raw_text.
+        job_description: The raw JD text (required for LLM re-rank).
 
     Returns:
-        Sorted list of dicts with: resume_id, similarity_score, skill_matches.
+        Sorted list of dicts with: resume_id, similarity_score, semantic_score,
+        skill_matches, llm_score, llm_reason.
     """
-    results = []
+    stage1 = []
     for resume in resumes:
         raw_sim = compute_similarity(job_embedding, resume["embedding"])
         skill_match = compute_skill_match(job_skills, resume["raw_text"])
-
-        # Normalized semantic score (0-1, rescaled)
         norm_sim = _normalize_sim(raw_sim)
-
-        # Skill match ratio (already 0-1)
         skill_ratio = skill_match["match_ratio"]
 
-        # Combined weighted score
         if job_skills:
             combined = (SEMANTIC_WEIGHT * norm_sim) + (SKILL_WEIGHT * skill_ratio)
         else:
-            # No skills listed — rely entirely on semantic similarity
             combined = norm_sim
 
-        # Apply a square-root curve to boost mid-tier scores into intuitive human distributions
-        # e.g., 0.25 -> 0.50 (50%), 0.49 -> 0.70 (70%)
-        final_score = combined ** 0.5
+        embedding_score = combined ** 0.5
+
+        stage1.append({
+            "resume_id": resume["id"],
+            "raw_text": resume["raw_text"],
+            "semantic_score": round(norm_sim, 4),
+            "embedding_score": round(embedding_score, 4),
+            "skill_matches": skill_match,
+        })
+
+    # Stage 2: send top-N to Gemini for re-ranking
+    stage1.sort(key=lambda x: x["embedding_score"], reverse=True)
+    top_n = settings.LLM_RERANK_TOP_N
+    shortlist = stage1[:top_n]
+
+    llm_scores: dict[int, dict] = {}
+    if job_description and shortlist:
+        candidates_for_llm = [
+            {"id": c["resume_id"], "raw_text": c["raw_text"]} for c in shortlist
+        ]
+        llm_scores = rerank_with_llm(job_description, job_skills, candidates_for_llm)
+
+    results = []
+    for entry in stage1:
+        llm = llm_scores.get(entry["resume_id"])
+        if llm:
+            final = (
+                settings.LLM_WEIGHT * llm["score"]
+                + settings.EMBEDDING_WEIGHT * entry["embedding_score"]
+            )
+            llm_score = round(llm["score"], 4)
+            llm_reason = llm["reason"]
+        else:
+            final = entry["embedding_score"]
+            llm_score = None
+            llm_reason = None
 
         results.append({
-            "resume_id": resume["id"],
-            "similarity_score": round(final_score, 4),
-            "semantic_score": round(norm_sim, 4),
-            "skill_matches": skill_match,
+            "resume_id": entry["resume_id"],
+            "similarity_score": round(final, 4),
+            "semantic_score": entry["semantic_score"],
+            "skill_matches": entry["skill_matches"],
+            "llm_score": llm_score,
+            "llm_reason": llm_reason,
         })
 
     results.sort(key=lambda x: x["similarity_score"], reverse=True)

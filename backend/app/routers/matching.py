@@ -46,8 +46,13 @@ def run_matching(
         for r in resumes
     ]
 
-    # Run ranking
-    ranked = rank_candidates(job.embedding, job.required_skills or [], resume_data)
+    # Run ranking (stage 1: embeddings, stage 2: Gemini re-rank)
+    ranked = rank_candidates(
+        job.embedding,
+        job.required_skills or [],
+        resume_data,
+        job_description=job.description,
+    )
 
     # Clear old results for this job and save new ones
     db.query(MatchResult).filter(MatchResult.job_id == job_id).delete()
@@ -60,6 +65,8 @@ def run_matching(
             resume_id=entry["resume_id"],
             similarity_score=entry["similarity_score"],
             skill_matches=entry["skill_matches"],
+            llm_score=entry.get("llm_score"),
+            llm_reason=entry.get("llm_reason"),
         )
         db.add(match)
 

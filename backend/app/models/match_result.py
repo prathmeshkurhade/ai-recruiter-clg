@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, Float, ForeignKey, DateTime, JSON
+from sqlalchemy import Column, Integer, Float, ForeignKey, DateTime, JSON, Text
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 
@@ -13,6 +13,8 @@ class MatchResult(Base):
     resume_id = Column(Integer, ForeignKey("resumes.id"), nullable=False)
     similarity_score = Column(Float, nullable=False)
     skill_matches = Column(JSON, nullable=True)  # {matched: [...], missing: [...]}
+    llm_score = Column(Float, nullable=True)
+    llm_reason = Column(Text, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     job = relationship("JobDescription", back_populates="match_results")
