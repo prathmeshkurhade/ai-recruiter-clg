@@ -20,10 +20,18 @@ export default function CandidateDossier({ candidate, onClose, token, onUpdateCa
     setDecision(newNode);
     try {
       const headers = { Authorization: `Bearer ${token}` };
-      await axios.patch(`http://localhost:8000/api/resumes/${candidate.id}/decision`, {
+      const res = await axios.patch(`http://localhost:8000/api/resumes/${candidate.id}/decision`, {
         decision_node: newNode
       }, { headers });
       onUpdateCandidate(candidate.id, 'decision_node', newNode);
+      
+      if (newNode === 'ENGAGE_FAST_TRACK') {
+          onUpdateCandidate(candidate.id, 'name', res.data.parsed_data?.name || candidate.name);
+          onUpdateCandidate(candidate.id, 'raw_text', res.data.raw_text);
+          if (res.data.parsed_data?.email) {
+            onUpdateCandidate(candidate.id, 'parsed_data', { ...candidate.parsed_data, email: res.data.parsed_data.email });
+          }
+      }
     } catch (err) {
       console.error("Decision Update Error", err);
     }
@@ -82,10 +90,15 @@ export default function CandidateDossier({ candidate, onClose, token, onUpdateCa
             <div className="flex justify-between w-full items-start">
               <div>
                 <div className="flex items-center gap-2 mb-1">
-                  <Hexagon size={16} className="text-[#00f0ff]" />
-                  <span className="text-[#00f0ff] uppercase tracking-widest text-xs font-bold">Neural Dossier Authorized</span>
+                  <Hexagon size={16} className={`text-${candidate.name.includes('VECTOR') ? 'amber-500' : '[#00f0ff]'}`} />
+                  <span className={`text-${candidate.name.includes('VECTOR') ? 'amber-500' : '[#00f0ff]'} uppercase tracking-widest text-xs font-bold`}>
+                    {candidate.name.includes('VECTOR') ? 'Identity Masked (Zero-Bias Active)' : 'Neural Dossier Authorized'}
+                  </span>
                 </div>
-                <h2 className="text-3xl font-space font-bold text-white">{candidate.name}</h2>
+                <h2 className="text-3xl font-space font-bold text-white flex items-center gap-3">
+                    {candidate.name}
+                    {candidate.name.includes('VECTOR') && <span className="bg-amber-500/10 text-amber-500 border border-amber-500/20 px-2 py-0.5 rounded text-[10px] tracking-widest uppercase">Blind Mode</span>}
+                </h2>
                 <div className="flex items-center gap-4 mt-2">
                   <p className="text-gray-400 font-mono text-sm">{candidate.parsed_data?.email || "UNKNOWN_ADDRESS"}</p>
                   <span className="bg-[#14141e] border border-[#1e1e2d] px-2 py-0.5 rounded text-xs text-gray-400 font-mono tracking-wider">
