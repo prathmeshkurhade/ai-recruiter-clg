@@ -29,13 +29,13 @@ export default function Platform() {
           >
             <div className="absolute top-0 right-0 w-64 h-64 bg-purple-500/5 blur-[80px] rounded-full group-hover:bg-purple-500/10 transition-colors pointer-events-none" />
             <Cpu className="text-purple-400 w-12 h-12 mb-6" />
-            <h3 className="text-3xl font-space font-bold text-white mb-4">Semantic Vector Transformation</h3>
+            <h3 className="text-3xl font-space font-bold text-white mb-4">Smart AI Matching</h3>
             <p className="text-gray-400 text-lg mb-6 line-clamp-4">
                Every resume passing through our mesh is translated into a highly dense 384-dimensional mathematical array using HuggingFace `all-MiniLM-L6-v2`. We map candidate context onto a spatial grid, calculating `cosine_similarity` to discover candidates whose experience conceptually matches the job, even if they used dramatically different terminology.
             </p>
             <ul className="space-y-3 text-sm font-mono text-purple-400/80">
               <li className="flex items-center gap-2"><Zap size={14}/> Non-Linear Score Normalization</li>
-              <li className="flex items-center gap-2"><Zap size={14}/> 60% Semantic / 40% Keyword Syntactic Weighting</li>
+              <li className="flex items-center gap-2"><Zap size={14}/> Balanced Skills & Keyword Matching</li>
               <li className="flex items-center gap-2"><Zap size={14}/> Context-Aware Implicit Skill Discovery</li>
             </ul>
           </motion.div>
@@ -52,8 +52,8 @@ export default function Platform() {
             </p>
             <ul className="space-y-3 text-sm font-mono text-[#00f0ff]/80">
               <li className="flex items-center gap-2"><Zap size={14}/> API-Level NLP Masking Layer</li>
-              <li className="flex items-center gap-2"><Zap size={14}/> Dynamic Neural Dossier Unmasking</li>
-              <li className="flex items-center gap-2"><Zap size={14}/> 100% Blind Substrate Evaluation</li>
+              <li className="flex items-center gap-2"><Zap size={14}/> View Full Candidate Profiles</li>
+              <li className="flex items-center gap-2"><Zap size={14}/> 100% Blind Resume Evaluation</li>
             </ul>
           </motion.div>
 
@@ -75,7 +75,7 @@ export default function Platform() {
           >
             <div className="absolute top-0 right-0 w-64 h-64 bg-amber-500/5 blur-[80px] rounded-full group-hover:bg-amber-500/10 transition-colors pointer-events-none" />
             <Network className="text-amber-400 w-12 h-12 mb-6" />
-            <h3 className="text-3xl font-space font-bold text-white mb-4">Multi-Modal Extraction Mesh</h3>
+            <h3 className="text-3xl font-space font-bold text-white mb-4">Advanced Data Extraction</h3>
             <p className="text-gray-400 text-lg mb-6">
                Fling nested PDFs, deeply disjointed DOCX hierarchies, and plaintext across our endpoints. The extraction orchestrator dynamically adapts, utilizing `pdfplumber` context mapping to rip out JSON structures while completely disregarding manual human formatting rules.
             </p>
@@ -87,7 +87,7 @@ export default function Platform() {
         <div className="mt-20 text-center border-t border-[#1e1e2d] pt-16">
            <h4 className="text-2xl font-space font-bold text-white mb-4">Deployed on ASGI Infrastructure</h4>
            <div className="flex flex-wrap justify-center gap-4">
-              {['FastAPI', 'React', 'Framer Motion', 'Pydantic V2', 'SQLAlchemy 2.0', 'Uvicorn', 'Tailwind', 'Vector Maths'].map((tech) => (
+              {['FastAPI', 'React', 'Framer Motion', 'Pydantic V2', 'SQLAlchemy 2.0', 'Uvicorn', 'Tailwind', 'AI Matching'].map((tech) => (
                  <span key={tech} className="px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-sm font-mono text-gray-400">
                     {tech}
                  </span>

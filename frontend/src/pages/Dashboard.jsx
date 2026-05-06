@@ -29,7 +29,7 @@ export default function Dashboard() {
       <header className="mb-10 flex justify-between items-end gap-6">
         <div>
           <h1 className="text-4xl font-space font-bold text-white tracking-tight">Main Dashboard</h1>
-          <p className="text-gray-400 mt-2 text-lg">Your Agentic Recruitment overview.</p>
+          <p className="text-gray-400 mt-2 text-lg">Your Recruitment overview.</p>
         </div>
         <Link to="/jobs/new" className="bg-[#00f0ff] text-black px-6 py-3 rounded-xl font-bold hover:bg-white transition-all shadow-[0_0_20px_rgba(0,240,255,0.2)]">
           Create New Job
@@ -58,7 +58,7 @@ export default function Dashboard() {
       {/* Pipeline Table */}
       <div className="bg-[#14141e] border border-[#1e1e2d] rounded-2xl shadow-xl overflow-hidden">
         <div className="p-6 border-b border-[#1e1e2d]">
-          <h2 className="text-xl font-space font-bold text-white">Active Pipelines</h2>
+          <h2 className="text-xl font-space font-bold text-white">Active Jobs</h2>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-left font-inter text-sm">
@@ -104,7 +104,7 @@ export default function Dashboard() {
                       <span className={`${job.statusColor} px-2 py-1 rounded text-xs tracking-wider`}>{job.statusLabel}</span>
                     </td>
                     <td className="px-6 py-4 flex items-center gap-4">
-                      <Link to={`/jobs/${job.id}`} className="text-[#00f0ff] hover:text-white transition-colors underline underline-offset-4 decoration-[#00f0ff]/30">Spatial Map</Link>
+                      <Link to={`/jobs/${job.id}`} className="text-[#00f0ff] hover:text-white transition-colors underline underline-offset-4 decoration-[#00f0ff]/30">View Matches</Link>
                       <button 
                         onClick={() => handleDelete(job.id)} 
                         className="text-red-500 hover:text-red-400 transition-colors bg-red-500/10 p-2 rounded-lg ml-auto" 

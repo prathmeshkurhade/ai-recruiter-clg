@@ -215,7 +215,7 @@ export default function JobDetail() {
           <div>
             <div className="flex items-center gap-3 mb-2">
               <span className="w-3 h-3 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_10px_rgba(16,185,129,0.8)]" />
-              <p className="text-emerald-400 text-sm font-bold tracking-widest uppercase">PIPELINE CORE</p>
+              <p className="text-emerald-400 text-sm font-bold tracking-widest uppercase">JOB DETAILS</p>
             </div>
             <h1 className="text-4xl font-space font-bold text-white tracking-tight">{job?.title || "Unknown Job"}</h1>
             <p className="text-gray-400 mt-2 flex items-center gap-2">
@@ -248,7 +248,7 @@ export default function JobDetail() {
               className={`bg-[#00f0ff] text-black px-6 py-3 rounded-xl font-bold flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(0,240,255,0.2)] hover:bg-white hover:shadow-[0_0_30px_rgba(255,255,255,0.4)] transition-all cursor-pointer ${isMatching || resumesPool.length === 0 ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
               {isMatching ? <RefreshCw className="animate-spin" size={18}/> : <Sparkles size={18} />}
-              {isMatching ? "Calculating Match Vectors..." : "Generate Neural Map"}
+              {isMatching ? "Calculating Match Scores..." : "Find Candidates"}
             </button>
           </div>
         </div>
@@ -312,11 +312,11 @@ export default function JobDetail() {
             </AnimatePresence>
         </div>
 
-        {/* Spatial Talent Map List */}
+        {/* Candidate Pool List */}
         <div>
           <div className="flex justify-between items-center mb-6 mt-10">
             <h2 className="text-2xl font-space font-bold text-white flex items-center gap-2">
-              <Target className="text-[#00f0ff]" /> Spatial Talent Map
+              <Target className="text-[#00f0ff]" /> Candidate Matches
             </h2>
             
             {sortedCandidates.length > 0 && (
@@ -342,7 +342,7 @@ export default function JobDetail() {
           <div className="space-y-4">
             {sortedCandidates.length === 0 ? (
               <div className="bg-[#14141e] border border-[#1e1e2d] rounded-2xl p-6 text-center text-gray-400">
-                Awaiting map generation. Push 'Generate Neural Map' to crunch processing matrix.
+                Waiting for match generation. Click 'Find Candidates' to analyze resumes.
               </div>
             ) : (
               displayedCandidates.map((cand, index) => (
@@ -366,13 +366,13 @@ export default function JobDetail() {
                       <button 
                         onClick={() => setSelectedCandidate(cand)}
                         className="text-sm font-semibold text-[#00f0ff] border border-[#00f0ff]/30 px-4 py-2 rounded-lg hover:bg-[#00f0ff]/10 transition-colors cursor-pointer focus:outline-none focus:ring-1 focus:ring-[#00f0ff]">
-                         Open Neural Dossier
+                         View Candidate Details
                       </button>
                     </div>
                     
                     <div className="mt-4">
                       <div className="flex justify-between text-xs text-gray-500 mb-1">
-                        <span>Semantic Distance Match</span>
+                        <span>AI Match Score</span>
                         {cand.missing.length > 0 && <span className="text-amber-400">Missing: {cand.missing.slice(0, 3).join(", ")}{cand.missing.length > 3 ? "..." : ""}</span>}
                       </div>
                       <div className="w-full bg-[#0a0a0f] rounded-full h-1.5 overflow-hidden">
@@ -403,7 +403,7 @@ export default function JobDetail() {
                                       {found ? '+' : '-'}{skill}
                                     </span>
                                   ))}
-                                  {Object.keys(cand.rawSkills).length === 0 && <span className="text-xs text-gray-500">No skill vectors mapped.</span>}
+                                  {Object.keys(cand.rawSkills).length === 0 && <span className="text-xs text-gray-500">No skills extracted.</span>}
                                 </div>
                             </div>
                           </div>

@@ -118,7 +118,7 @@ export default function EthicalSettings() {
             <div className="space-y-6">
               <div className="flex items-center justify-between p-4 bg-black/20 rounded-2xl border border-gray-800">
                 <div>
-                  <h3 className="text-white font-semibold">Semantic Neutrality Filter</h3>
+                  <h3 className="text-white font-semibold">Unbiased AI Matching Filter</h3>
                   <p className="text-sm text-gray-400 mt-1">Normalizes university names and geographic locations.</p>
                 </div>
                 <EthicalToggle enabled={biasSuppression} setEnabled={(val) => handleToggleChange('biasSuppression', val, setBiasSuppression)} />
@@ -165,7 +165,7 @@ export default function EthicalSettings() {
                 {logs.length === 0 ? (
                   <tr>
                     <td colSpan="4" className="px-6 py-8 text-center text-gray-500">
-                      No ingestion logs or privacy audits tracked yet. Securely process candidate vectors to populate the immutable log.
+                      No ingestion logs or privacy audits tracked yet. Securely process candidate profiles to populate the immutable log.
                     </td>
                   </tr>
                 ) : (

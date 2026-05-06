@@ -44,7 +44,7 @@ export default function JobForm() {
       navigate("/dashboard");
     } catch (err) {
       console.error(err);
-      setError("Failed to initialize Job Vector. " + (err.response?.data?.detail || err.message));
+      setError("Failed to create Job. " + (err.response?.data?.detail || err.message));
       setLoading(false);
     }
   };
@@ -53,8 +53,8 @@ export default function JobForm() {
     <div className="min-h-[100vh] bg-[#0a0a0f] p-10 font-inter w-full">
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="max-w-4xl mx-auto space-y-8">
         <header>
-          <h1 className="text-4xl font-space font-bold text-white tracking-tight">Holographic Job Creator</h1>
-          <p className="text-gray-400 mt-2 text-lg">Define the semantic embedding space for your next hire.</p>
+          <h1 className="text-4xl font-space font-bold text-white tracking-tight">Create New Job</h1>
+          <p className="text-gray-400 mt-2 text-lg">Describe the ideal candidate for this role.</p>
         </header>
 
         <form onSubmit={handleSubmit} className="bg-[#14141e] border border-[#1e1e2d] rounded-3xl p-8 shadow-2xl relative overflow-hidden group">
@@ -127,7 +127,7 @@ export default function JobForm() {
                 disabled={loading}
                 className={`bg-[#00f0ff] text-black px-8 py-3 rounded-xl font-bold flex items-center gap-2 hover:bg-white transition-all shadow-[0_0_20px_rgba(0,240,255,0.2)] cursor-pointer ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}>
                 {loading ? <RefreshCw className="animate-spin" size={18} /> : <Save size={18} />}
-                {loading ? "Initializing..." : "Initialize Job Vector"}
+                {loading ? "Creating..." : "Create Job"}
               </button>
             </div>
           </div>

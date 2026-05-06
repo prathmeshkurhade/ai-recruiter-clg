@@ -26,7 +26,7 @@ export default function Solutions() {
             <FastForward className="text-[#00f0ff] w-12 h-12 mb-6 group-hover:scale-110 transition-transform" />
             <h3 className="text-2xl font-space font-bold text-white mb-4">Fast-Track Engine</h3>
             <p className="text-gray-400 leading-relaxed mb-6">
-              When the AI Neural Vector triggers a 90% similarity map, skip the manual review. Pluck them from the stack and instantly dump them into the Fast-Track Node in the PostgreSQL backend via a single click inside the Neural Dossier.
+              When the AI identifies a 90% match score, skip the manual review. Pluck them from the stack and instantly move them into the Fast-Track list via a single click inside the Candidate Profile.
             </p>
           </motion.div>
 
@@ -40,9 +40,9 @@ export default function Solutions() {
 
           <motion.div whileHover={{ y: -5 }} className="bg-[#14141e] border border-[#1e1e2d] rounded-3xl p-8 group">
             <Activity className="text-purple-400 w-12 h-12 mb-6 group-hover:scale-110 transition-transform" />
-            <h3 className="text-2xl font-space font-bold text-white mb-4">Real-Time Synaptic Logging</h3>
+            <h3 className="text-2xl font-space font-bold text-white mb-4">Real-Time Interview Notes</h3>
             <p className="text-gray-400 leading-relaxed mb-6">
-              Don't drop your workflow out to Excel. Type your technical assessment notes directly into the `CandidateDossier.jsx` Synaptic Log. The OS automatically intercepts `onBlur` events, tunneling a seamless REST `PATCH` update directly to the Postgres instances.
+              Don't drop your workflow out to Excel. Type your technical assessment notes directly into the Candidate Profile Notes. The system automatically saves your notes in real-time.
             </p>
           </motion.div>
         </div>
@@ -61,7 +61,7 @@ export default function Solutions() {
               "Zero-Knowledge JWT Token Architectures",
               "Sub-Millisecond Cosine Similarity Maths",
               "Glassmorphic UX Layer Interfaces",
-              "Live Vector Matching UI Generation"
+              "Live AI Matching UI Generation"
             ].map((feature, i) => (
               <div key={i} className="flex items-center gap-4 group">
                 <div className="w-8 h-8 rounded-full bg-white/5 border border-white/10 flex items-center justify-center group-hover:border-[#00f0ff]/50 group-hover:bg-[#00f0ff]/10 transition-colors">

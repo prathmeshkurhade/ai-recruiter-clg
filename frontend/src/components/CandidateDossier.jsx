@@ -151,7 +151,7 @@ export default function CandidateDossier({ candidate, onClose, token, onUpdateCa
                 <div className="flex items-center gap-2 mb-1">
                   <Hexagon size={16} className={`text-${candidate.name.includes('VECTOR') ? 'amber-500' : '[#00f0ff]'}`} />
                   <span className={`text-${candidate.name.includes('VECTOR') ? 'amber-500' : '[#00f0ff]'} uppercase tracking-widest text-xs font-bold`}>
-                    {candidate.name.includes('VECTOR') ? 'Identity Masked (Zero-Bias Active)' : 'Neural Dossier Authorized'}
+                    {candidate.name.includes('VECTOR') ? 'Identity Hidden (Unbiased Screening)' : 'Profile Access Granted'}
                   </span>
                 </div>
                 <h2 className="text-3xl font-space font-bold text-white flex items-center gap-3">
@@ -177,7 +177,7 @@ export default function CandidateDossier({ candidate, onClose, token, onUpdateCa
             <div className="bg-[#14141e] rounded-2xl p-6 border border-[#1e1e2d]">
               <div className="flex justify-between items-center mb-4">
                 <h3 className="text-xs uppercase text-gray-500 font-bold tracking-widest flex items-center gap-2">
-                  <Activity size={14}/> Routing Node Matrix (Decision)
+                  <Activity size={14}/> Decision Board
                 </h3>
                 <button
                   onClick={handleDraftEmail}
@@ -206,13 +206,13 @@ export default function CandidateDossier({ candidate, onClose, token, onUpdateCa
                 <div className="relative w-24 h-24 flex flex-shrink-0 items-center justify-center rounded-full bg-[#0a0a0f] border-4 mb-2" style={{ borderColor: candidate.match > 90 ? '#00f0ff' : candidate.match > 70 ? '#10b981' : '#f59e0b' }}>
                     <span className="text-2xl font-space font-bold text-white">{candidate.match}%</span>
                 </div>
-                <span className="text-[10px] text-gray-500 font-mono uppercase tracking-widest text-center mt-2">Semantic Rank</span>
+                <span className="text-[10px] text-gray-500 font-mono uppercase tracking-widest text-center mt-2">Match Score</span>
               </div>
               
               <div className="bg-[#14141e] rounded-2xl border border-[#1e1e2d] p-6 flex-1 flex flex-col">
                  <div className="flex gap-4 border-b border-[#1e1e2d] pb-2 mb-4">
                    <button onClick={() => setActiveTab("vector")} className={`text-xs uppercase font-bold tracking-widest flex items-center gap-2 transition-colors ${activeTab === 'vector' ? 'text-[#00f0ff]' : 'text-gray-500 hover:text-gray-300'}`}>
-                     <BrainCircuit size={14}/> Vector Activation
+                     <BrainCircuit size={14}/> Skill Match
                    </button>
                    <button onClick={() => setActiveTab("chat")} className={`text-xs uppercase font-bold tracking-widest flex items-center gap-2 transition-colors ${activeTab === 'chat' ? 'text-[#00f0ff]' : 'text-gray-500 hover:text-gray-300'}`}>
                      <MessageSquare size={14}/> Chat with Resume
@@ -258,7 +258,7 @@ export default function CandidateDossier({ candidate, onClose, token, onUpdateCa
                        ))}
                        {isChatting && (
                          <div className="flex justify-start">
-                           <div className="bg-[#1e1e2d] text-gray-400 rounded-lg p-3 text-xs animate-pulse font-mono">Analyzing matrix...</div>
+                           <div className="bg-[#1e1e2d] text-gray-400 rounded-lg p-3 text-xs animate-pulse font-mono">Analyzing resume...</div>
                          </div>
                        )}
                      </div>
@@ -282,19 +282,19 @@ export default function CandidateDossier({ candidate, onClose, token, onUpdateCa
             {/* Recruiter Intel */}
             <div className="bg-[#14141e] rounded-2xl border border-[#1e1e2d] p-6 relative group">
                 <h3 className="text-xs uppercase text-gray-500 font-bold tracking-widest mb-4 flex items-center gap-2">
-                   <Terminal size={14}/> Synaptic Log (Recruiter Notes)
+                   <Terminal size={14}/> Recruiter Notes
                 </h3>
                 <textarea 
                   value={intel}
                   onChange={(e) => setIntel(e.target.value)}
                   onBlur={handleIntelSave}
                   className="w-full bg-[#0a0a0f] border border-[#1e1e2d] text-emerald-400 font-mono text-sm p-4 rounded-xl focus:border-[#00f0ff] focus:outline-none focus:ring-1 focus:ring-[#00f0ff] min-h-[120px] resize-y placeholder-emerald-900/50 transition-all custom-scrollbar"
-                  placeholder="> Initialize secure logging sequence (Auto-saves on exit)..."
+                  placeholder="Add notes about the candidate..."
                 />
                 <AnimatePresence>
                   {isSaving && (
                     <motion.div initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}} className="absolute top-6 right-6 text-[10px] text-[#00f0ff] uppercase font-mono tracking-widest animate-pulse border border-[#00f0ff]/30 px-2 rounded">
-                      Saving Sequence...
+                      Saving...
                     </motion.div>
                   )}
                 </AnimatePresence>
@@ -304,7 +304,7 @@ export default function CandidateDossier({ candidate, onClose, token, onUpdateCa
             <div className="bg-[#14141e] rounded-2xl border border-[#1e1e2d] overflow-hidden">
                 <div className="p-4 border-b border-[#1e1e2d] bg-[#0a0a0f]">
                   <h3 className="text-xs uppercase text-gray-500 font-bold tracking-widest flex items-center gap-2">
-                    <FileText size={14}/> Raw Extracted Substrate (Resume Text)
+                    <FileText size={14}/> Resume Text
                   </h3>
                 </div>
                 <div className="p-6 bg-[#0a0a0f]/50 h-[300px] overflow-y-auto custom-scrollbar">

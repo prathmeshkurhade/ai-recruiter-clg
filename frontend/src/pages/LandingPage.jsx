@@ -6,7 +6,7 @@ import { useState } from "react";
 const faqs = [
   {
     question: "Does the AI simply scan for keywords like standard ATS software?",
-    answer: "No. Standard ATS systems use boolean keyword matching, which misses great candidates who use different terminology. HireForge AI converts resumes and job descriptions into semantic vectors, understanding the *context* and *intent* behind the text, accurately matching tangential skills."
+    answer: "No. Standard ATS systems use boolean keyword matching, which misses great candidates who use different terminology. HireForge AI uses smart matching to understand the *context* and *intent* behind the text, accurately matching tangential skills."
   },
   {
     question: "How does the Zero-Bias Engine prevent discrimination?",
@@ -36,13 +36,13 @@ export default function LandingPage() {
         >
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#1e1e2d] border border-[#2a2a3a] text-sm text-[#00f0ff] mb-6 shadow-xl">
             <span className="w-2 h-2 rounded-full bg-[#00f0ff] animate-pulse" />
-            Introducing the Ethical Kinetic OS
+            Introducing the Smart Hiring Platform
           </div>
           <h1 className="text-5xl md:text-7xl font-space font-bold text-white tracking-tight leading-tight max-w-4xl mx-auto">
-            Hire Talent with <br/><span className="text-transparent bg-clip-text bg-gradient-to-r from-[#00f0ff] to-purple-400">Semantic Intelligence.</span>
+            Hire Talent with <br/><span className="text-transparent bg-clip-text bg-gradient-to-r from-[#00f0ff] to-purple-400">Smart AI Matching.</span>
           </h1>
           <p className="mt-6 text-xl text-gray-400 max-w-2xl mx-auto">
-            Stop filtering by keywords. HireForge AI uses explainable AI vectors to instantly parse, match, and rank thousands of resumes against your job descriptions.
+            Stop filtering by keywords. HireForge AI uses explainable AI to instantly parse, match, and rank thousands of resumes against your job descriptions.
           </p>
           <div className="mt-10 flex items-center justify-center gap-4">
             <Link to="/login" className="group bg-[#00f0ff] text-black px-8 py-3 rounded-xl font-bold text-lg hover:bg-white transition-colors flex items-center gap-2 shadow-[0_0_30px_rgba(0,240,255,0.3)]">
@@ -59,9 +59,9 @@ export default function LandingPage() {
       {/* Product Highlight / Mockup Section */}
       <section className="max-w-7xl mx-auto px-6 py-20 relative z-10">
          <div className="text-center mb-16">
-            <h2 className="text-4xl font-space font-bold text-white mb-4">The Holographic Candidate Dossier</h2>
+            <h2 className="text-4xl font-space font-bold text-white mb-4">The Candidate Profile Viewer</h2>
             <p className="text-gray-400 max-w-2xl mx-auto text-lg">
-                Ditch the slow PDF viewers and standard Kanban boards. Our dynamic, sliding Neural Dossier extracts candidates into clean data layers, analyzes missing vector skills, and provides instant Decision Routing with auto-saving Synaptic Logs.
+                Ditch the slow PDF viewers and standard Kanban boards. Our dynamic, sliding Candidate Profile extracts candidates into clean data layers, analyzes missing skills, and provides instant Decision Routing with auto-saving Logs.
             </p>
          </div>
 
@@ -117,7 +117,7 @@ export default function LandingPage() {
       {/* Feature Step-by-Step */}
       <section className="py-24 bg-[#0a0a0f] border-t border-b border-[#1e1e2d] relative">
          <div className="max-w-7xl mx-auto px-6">
-            <h2 className="text-3xl md:text-5xl font-space font-bold text-center text-white mb-16">The 4-Step Neural Pipeline</h2>
+            <h2 className="text-3xl md:text-5xl font-space font-bold text-center text-white mb-16">The 4-Step Hiring Process</h2>
             
             <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
                <motion.div whileHover={{ y: -5 }} className="bg-[#14141e] p-8 border border-[#1e1e2d] rounded-2xl relative">
