@@ -1,5 +1,6 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { X, BrainCircuit, Activity, FileText, Hexagon, Terminal } from "lucide-react";
+import { X, BrainCircuit, Activity, FileText, Hexagon, Terminal, Mail, MessageSquare, Send, Check } from "lucide-react";
+import { ResponsiveContainer, Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis } from "recharts";
 import { useState, useEffect } from "react";
 import axios from "axios";
 
@@ -7,6 +8,14 @@ export default function CandidateDossier({ candidate, onClose, token, onUpdateCa
   const [decision, setDecision] = useState(candidate?.decision_node || 'AWAITING_REVIEW');
   const [intel, setIntel] = useState(candidate?.intel_notes || "");
   const [isSaving, setIsSaving] = useState(false);
+
+  const [chatInput, setChatInput] = useState("");
+  const [chatHistory, setChatHistory] = useState([]);
+  const [isChatting, setIsChatting] = useState(false);
+  const [draftedEmail, setDraftedEmail] = useState(null);
+  const [isDraftingEmail, setIsDraftingEmail] = useState(false);
+  const [emailCopied, setEmailCopied] = useState(false);
+  const [activeTab, setActiveTab] = useState("vector"); // 'vector', 'chat'
 
   // Sync state if candidate prop changes
   useEffect(() => {
@@ -51,6 +60,56 @@ export default function CandidateDossier({ candidate, onClose, token, onUpdateCa
       setIsSaving(false);
     }
   };
+
+  const handleChatSubmit = async (e) => {
+    e?.preventDefault();
+    if (!chatInput.trim()) return;
+    
+    const userMsg = chatInput;
+    setChatInput("");
+    setChatHistory(prev => [...prev, { role: "user", content: userMsg }]);
+    setIsChatting(true);
+    
+    try {
+      const headers = { Authorization: `Bearer ${token}` };
+      const res = await axios.post(`http://localhost:8000/api/resumes/${candidate.id}/chat`, {
+        prompt: userMsg
+      }, { headers });
+      setChatHistory(prev => [...prev, { role: "ai", content: res.data.response }]);
+    } catch (err) {
+      setChatHistory(prev => [...prev, { role: "ai", content: "Error generating response. Check API connectivity." }]);
+    } finally {
+      setIsChatting(false);
+    }
+  };
+
+  const handleDraftEmail = async () => {
+    setIsDraftingEmail(true);
+    try {
+      const headers = { Authorization: `Bearer ${token}` };
+      const res = await axios.post(`http://localhost:8000/api/resumes/${candidate.id}/draft_email`, {}, { headers });
+      setDraftedEmail(res.data);
+      setEmailCopied(false);
+    } catch (err) {
+      console.error("Draft email error", err);
+    } finally {
+      setIsDraftingEmail(false);
+    }
+  };
+
+  const handleCopyEmail = () => {
+    if (draftedEmail) {
+      navigator.clipboard.writeText(`Subject: ${draftedEmail.subject}\n\n${draftedEmail.body}`);
+      setEmailCopied(true);
+      setTimeout(() => setEmailCopied(false), 2000);
+    }
+  };
+
+  const radarData = candidate.rawSkills ? Object.entries(candidate.rawSkills).map(([skill, found]) => ({
+    subject: skill,
+    A: found ? 100 : 10,
+    fullMark: 100,
+  })) : [];
 
   const getNodeColor = (node) => {
     switch(node) {
@@ -116,9 +175,18 @@ export default function CandidateDossier({ candidate, onClose, token, onUpdateCa
             
             {/* Action Nodes */}
             <div className="bg-[#14141e] rounded-2xl p-6 border border-[#1e1e2d]">
-              <h3 className="text-xs uppercase text-gray-500 font-bold tracking-widest mb-4 flex items-center gap-2">
-                <Activity size={14}/> Routing Node Matrix (Decision)
-              </h3>
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-xs uppercase text-gray-500 font-bold tracking-widest flex items-center gap-2">
+                  <Activity size={14}/> Routing Node Matrix (Decision)
+                </h3>
+                <button
+                  onClick={handleDraftEmail}
+                  disabled={isDraftingEmail}
+                  className="bg-[#1e1e2d] hover:bg-[#00f0ff]/10 text-[#00f0ff] border border-[#00f0ff]/30 text-xs font-bold px-3 py-1.5 rounded transition-colors flex items-center gap-2"
+                >
+                  {isDraftingEmail ? "Drafting..." : <><Mail size={14} /> Draft AI Email</>}
+                </button>
+              </div>
               <div className="grid grid-cols-2 gap-3">
                 {['AWAITING_REVIEW', 'ENGAGE_FAST_TRACK', 'TECHNICAL_ASSESS', 'ARCHIVE_VECTOR'].map(node => (
                   <button 
@@ -141,18 +209,73 @@ export default function CandidateDossier({ candidate, onClose, token, onUpdateCa
                 <span className="text-[10px] text-gray-500 font-mono uppercase tracking-widest text-center mt-2">Semantic Rank</span>
               </div>
               
-              <div className="bg-[#14141e] rounded-2xl border border-[#1e1e2d] p-6 flex-1">
-                 <h3 className="text-xs uppercase text-gray-500 font-bold tracking-widest mb-4 flex items-center gap-2">
-                   <BrainCircuit size={14}/> Vector Activation (Missing Skills)
-                 </h3>
-                 <div className="flex flex-wrap gap-2">
-                    {Object.entries(candidate.rawSkills || {}).map(([skill, found]) => (
-                      <span key={skill} className={`px-2 py-1 flex items-center gap-1 text-xs rounded font-mono ${found ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-red-500/10 text-red-500 border border-red-500/20'}`}>
-                        {found ? '+' : '-'}{skill}
-                      </span>
-                    ))}
-                    {Object.keys(candidate.rawSkills || {}).length === 0 && <span className="text-xs text-gray-500 font-mono">No skill vectors explicitly defined in job core.</span>}
+              <div className="bg-[#14141e] rounded-2xl border border-[#1e1e2d] p-6 flex-1 flex flex-col">
+                 <div className="flex gap-4 border-b border-[#1e1e2d] pb-2 mb-4">
+                   <button onClick={() => setActiveTab("vector")} className={`text-xs uppercase font-bold tracking-widest flex items-center gap-2 transition-colors ${activeTab === 'vector' ? 'text-[#00f0ff]' : 'text-gray-500 hover:text-gray-300'}`}>
+                     <BrainCircuit size={14}/> Vector Activation
+                   </button>
+                   <button onClick={() => setActiveTab("chat")} className={`text-xs uppercase font-bold tracking-widest flex items-center gap-2 transition-colors ${activeTab === 'chat' ? 'text-[#00f0ff]' : 'text-gray-500 hover:text-gray-300'}`}>
+                     <MessageSquare size={14}/> Chat with Resume
+                   </button>
                  </div>
+                 
+                 {activeTab === 'vector' ? (
+                   <div className="flex-1 flex flex-col md:flex-row gap-6">
+                     <div className="flex-1 min-h-[200px]">
+                       {radarData.length > 0 ? (
+                         <ResponsiveContainer width="100%" height="100%">
+                           <RadarChart cx="50%" cy="50%" outerRadius="70%" data={radarData}>
+                             <PolarGrid stroke="#1e1e2d" />
+                             <PolarAngleAxis dataKey="subject" tick={{ fill: '#9ca3af', fontSize: 10, fontFamily: 'monospace' }} />
+                             <PolarRadiusAxis angle={30} domain={[0, 100]} tick={false} axisLine={false} />
+                             <Radar name="Candidate" dataKey="A" stroke="#00f0ff" fill="#00f0ff" fillOpacity={0.2} />
+                           </RadarChart>
+                         </ResponsiveContainer>
+                       ) : (
+                         <div className="flex h-full items-center justify-center text-xs text-gray-500 font-mono">No skills map available.</div>
+                       )}
+                     </div>
+                     <div className="flex-1 flex flex-wrap gap-2 content-start">
+                        {Object.entries(candidate.rawSkills || {}).map(([skill, found]) => (
+                          <span key={skill} className={`px-2 py-1 flex items-center gap-1 text-xs rounded font-mono ${found ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-red-500/10 text-red-500 border border-red-500/20'}`}>
+                            {found ? '+' : '-'}{skill}
+                          </span>
+                        ))}
+                     </div>
+                   </div>
+                 ) : (
+                   <div className="flex-1 flex flex-col min-h-[200px]">
+                     <div className="flex-1 overflow-y-auto mb-4 space-y-3 custom-scrollbar pr-2 max-h-[200px]">
+                       {chatHistory.length === 0 && (
+                         <p className="text-xs text-gray-500 font-mono text-center mt-4">Ask a question about this candidate's resume...</p>
+                       )}
+                       {chatHistory.map((msg, i) => (
+                         <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                           <div className={`max-w-[80%] rounded-lg p-3 text-sm font-mono ${msg.role === 'user' ? 'bg-[#00f0ff]/10 text-[#00f0ff] border border-[#00f0ff]/20' : 'bg-[#1e1e2d] text-gray-300'}`}>
+                             {msg.content}
+                           </div>
+                         </div>
+                       ))}
+                       {isChatting && (
+                         <div className="flex justify-start">
+                           <div className="bg-[#1e1e2d] text-gray-400 rounded-lg p-3 text-xs animate-pulse font-mono">Analyzing matrix...</div>
+                         </div>
+                       )}
+                     </div>
+                     <form onSubmit={handleChatSubmit} className="flex gap-2">
+                       <input 
+                         type="text" 
+                         value={chatInput}
+                         onChange={(e) => setChatInput(e.target.value)}
+                         placeholder="e.g. Did they use Docker?" 
+                         className="flex-1 bg-[#0a0a0f] border border-[#1e1e2d] rounded-lg px-3 py-2 text-sm text-white font-mono focus:outline-none focus:border-[#00f0ff]"
+                       />
+                       <button type="submit" disabled={isChatting || !chatInput.trim()} className="bg-[#00f0ff]/10 text-[#00f0ff] border border-[#00f0ff]/30 rounded-lg px-3 py-2 hover:bg-[#00f0ff]/20 disabled:opacity-50">
+                         <Send size={16} />
+                       </button>
+                     </form>
+                   </div>
+                 )}
               </div>
             </div>
 
@@ -192,6 +315,27 @@ export default function CandidateDossier({ candidate, onClose, token, onUpdateCa
             </div>
 
           </div>
+
+            {/* Email Draft Modal Overlay inside the dossier */}
+            <AnimatePresence>
+              {draftedEmail && (
+                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 20 }} className="absolute inset-0 z-50 bg-[#0a0a0f]/95 backdrop-blur-md p-8 flex flex-col overflow-y-auto">
+                  <div className="flex justify-between items-center mb-6">
+                    <h3 className="text-xl font-space font-bold text-white flex items-center gap-2"><Mail className="text-[#00f0ff]" /> AI Drafted Response</h3>
+                    <button onClick={() => setDraftedEmail(null)} className="text-gray-400 hover:text-white"><X size={24} /></button>
+                  </div>
+                  <div className="bg-[#14141e] border border-[#1e1e2d] rounded-xl p-6 mb-4 flex-1">
+                    <p className="text-sm text-gray-400 font-mono mb-4 border-b border-[#1e1e2d] pb-4">Subject: <span className="text-white">{draftedEmail.subject}</span></p>
+                    <p className="text-sm text-gray-300 font-mono whitespace-pre-wrap leading-relaxed">{draftedEmail.body}</p>
+                  </div>
+                  <button onClick={handleCopyEmail} className="mt-4 bg-[#00f0ff] text-black font-bold py-4 rounded-xl flex items-center justify-center gap-2 hover:bg-white transition-colors shadow-[0_0_15px_rgba(0,240,255,0.3)]">
+                    {emailCopied ? <Check size={18} /> : <FileText size={18} />}
+                    {emailCopied ? "Copied to Clipboard!" : "Copy to Clipboard"}
+                  </button>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
         </motion.div>
       </div>
     </AnimatePresence>

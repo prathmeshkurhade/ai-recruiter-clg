@@ -20,3 +20,13 @@ class ResumePatchDecision(BaseModel):
 
 class ResumePatchIntel(BaseModel):
     intel_notes: str
+
+class ResumeChatRequest(BaseModel):
+    prompt: str
+
+class ResumeChatResponse(BaseModel):
+    response: str
+
+class DraftEmailResponse(BaseModel):
+    subject: str
+    body: str

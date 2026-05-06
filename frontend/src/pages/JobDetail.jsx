@@ -1,4 +1,4 @@
-import { Shield, Sparkles, MapPin, Target, RefreshCw, UploadCloud, Trash2, Users } from "lucide-react";
+import { Shield, Sparkles, MapPin, Target, RefreshCw, UploadCloud, Trash2, Users, Download, ChevronUp, ChevronDown } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect, useRef, useCallback } from "react";
 import axios from "axios";
@@ -28,6 +28,7 @@ export default function JobDetail() {
   const [expandedVector, setExpandedVector] = useState(null);
   const [selectedCandidate, setSelectedCandidate] = useState(null);
   const [filterType, setFilterType] = useState("ALL");
+  const [isPoolMinimized, setIsPoolMinimized] = useState(false);
   const fileInputRef = useRef(null);
 
   const fetchDetails = useCallback(async () => {
@@ -157,6 +158,36 @@ export default function JobDetail() {
     }
   };
 
+  const handleDownloadCSV = () => {
+    if (sortedCandidates.length === 0) return;
+    
+    const headers = ["Rank", "Name", "Match Percentage", "Stage", "Missing Skills", "File Name"];
+    const csvContent = [
+      headers.join(","),
+      ...sortedCandidates.map((cand, index) => {
+        const resume = resumesPool.find(r => r.id === cand.id);
+        const fileName = resume ? resume.file_name : "";
+        return [
+          index + 1,
+          `"${cand.name}"`,
+          `${cand.match}%`,
+          `"${cand.decision_node ? cand.decision_node.replace(/_/g, " ") : "AWAITING REVIEW"}"`,
+          `"${cand.missing.join(', ')}"`,
+          `"${fileName}"`
+        ].join(",");
+      })
+    ].join("\n");
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", `talent_map_${job?.title?.replace(/\\s+/g, '_') || 'export'}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   if (loading) {
     return (
       <div className="min-h-[100vh] bg-[#0a0a0f] p-10 font-inter w-full flex items-center justify-center">
@@ -224,41 +255,61 @@ export default function JobDetail() {
 
         {/* Candidate Pool Section */}
         <div>
-            <h2 className="text-2xl font-space font-bold text-white mb-6 flex items-center gap-2">
-              <Users className="text-purple-400" /> Candidate Pool
-            </h2>
-            <div className="bg-[#14141e] border border-[#1e1e2d] rounded-2xl overflow-hidden shadow-xl">
-                <table className="w-full text-left font-inter text-sm">
-                    <thead className="bg-[#0a0a0f] text-gray-400 border-b border-[#1e1e2d]">
-                        <tr>
-                            <th className="px-6 py-4 font-semibold uppercase tracking-wider text-xs">Filename</th>
-                            <th className="px-6 py-4 font-semibold uppercase tracking-wider text-xs">Email ID</th>
-                            <th className="px-6 py-4 font-semibold uppercase tracking-wider text-xs w-24 text-center">Action</th>
-                        </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-800">
-                        {resumesPool.length === 0 ? (
-                            <tr>
-                              <td colSpan="3" className="px-6 py-8 text-center text-gray-500">
-                                No base resumes mapped. Upload files to securely build the candidate pool.
-                              </td>
-                            </tr>
-                        ) : (
-                            resumesPool.map(res => (
-                                <tr key={res.id} className="hover:bg-white/5 transition-colors group">
-                                    <td className="px-6 py-4 text-white font-mono break-all font-semibold">{res.file_name}</td>
-                                    <td className="px-6 py-4 text-gray-400 break-all">{res.parsed_data?.email || "--"}</td>
-                                    <td className="px-6 py-4 text-center">
-                                        <button onClick={() => handleDeleteResume(res.id)} className="text-red-400 hover:text-red-300 opacity-60 group-hover:opacity-100 transition-opacity p-2 hover:bg-red-500/10 rounded-lg cursor-pointer">
-                                            <Trash2 size={18} />
-                                        </button>
-                                    </td>
-                                </tr>
-                            ))
-                        )}
-                    </tbody>
-                </table>
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-2xl font-space font-bold text-white flex items-center gap-2">
+                <Users className="text-purple-400" /> Candidate Pool
+              </h2>
+              <button 
+                onClick={() => setIsPoolMinimized(!isPoolMinimized)}
+                className="text-gray-400 hover:text-white transition-colors cursor-pointer p-2 bg-[#14141e] rounded-lg border border-[#1e1e2d]"
+              >
+                {isPoolMinimized ? <ChevronDown size={20} /> : <ChevronUp size={20} />}
+              </button>
             </div>
+            
+            <AnimatePresence>
+              {!isPoolMinimized && (
+                <motion.div 
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  className="overflow-hidden"
+                >
+                  <div className="bg-[#14141e] border border-[#1e1e2d] rounded-2xl overflow-hidden shadow-xl">
+                      <table className="w-full text-left font-inter text-sm">
+                          <thead className="bg-[#0a0a0f] text-gray-400 border-b border-[#1e1e2d]">
+                              <tr>
+                                  <th className="px-6 py-4 font-semibold uppercase tracking-wider text-xs">Filename</th>
+                                  <th className="px-6 py-4 font-semibold uppercase tracking-wider text-xs">Email ID</th>
+                                  <th className="px-6 py-4 font-semibold uppercase tracking-wider text-xs w-24 text-center">Action</th>
+                              </tr>
+                          </thead>
+                          <tbody className="divide-y divide-gray-800">
+                              {resumesPool.length === 0 ? (
+                                  <tr>
+                                    <td colSpan="3" className="px-6 py-8 text-center text-gray-500">
+                                      No base resumes mapped. Upload files to securely build the candidate pool.
+                                    </td>
+                                  </tr>
+                              ) : (
+                                  resumesPool.map(res => (
+                                      <tr key={res.id} className="hover:bg-white/5 transition-colors group">
+                                          <td className="px-6 py-4 text-white font-mono break-all font-semibold">{res.file_name}</td>
+                                          <td className="px-6 py-4 text-gray-400 break-all">{res.parsed_data?.email || "--"}</td>
+                                          <td className="px-6 py-4 text-center">
+                                              <button onClick={() => handleDeleteResume(res.id)} className="text-red-400 hover:text-red-300 opacity-60 group-hover:opacity-100 transition-opacity p-2 hover:bg-red-500/10 rounded-lg cursor-pointer">
+                                                  <Trash2 size={18} />
+                                              </button>
+                                          </td>
+                                      </tr>
+                                  ))
+                              )}
+                          </tbody>
+                      </table>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
         </div>
 
         {/* Spatial Talent Map List */}
@@ -269,15 +320,23 @@ export default function JobDetail() {
             </h2>
             
             {sortedCandidates.length > 0 && (
-              <select 
-                value={filterType} 
-                onChange={(e) => setFilterType(e.target.value)}
-                className="bg-[#14141e] border border-[#1e1e2d] text-white px-4 py-2 rounded-lg outline-none focus:border-[#00f0ff] cursor-pointer"
-              >
-                <option value="ALL">All Resumes ({sortedCandidates.length})</option>
-                <option value="TOP_10">Top 10 Matches</option>
-                <option value="TOP_20">Top 20 Matches</option>
-              </select>
+              <div className="flex gap-4">
+                <button
+                  onClick={handleDownloadCSV}
+                  className="bg-[#1e1e2d] text-[#00f0ff] border border-[#00f0ff]/30 px-4 py-2 rounded-lg hover:bg-[#00f0ff]/10 transition-colors flex items-center gap-2 cursor-pointer text-sm font-semibold"
+                >
+                  <Download size={16} /> Export CSV
+                </button>
+                <select 
+                  value={filterType} 
+                  onChange={(e) => setFilterType(e.target.value)}
+                  className="bg-[#14141e] border border-[#1e1e2d] text-white px-4 py-2 rounded-lg outline-none focus:border-[#00f0ff] cursor-pointer"
+                >
+                  <option value="ALL">All Resumes ({sortedCandidates.length})</option>
+                  <option value="TOP_10">Top 10 Matches</option>
+                  <option value="TOP_20">Top 20 Matches</option>
+                </select>
+              </div>
             )}
           </div>
           <div className="space-y-4">

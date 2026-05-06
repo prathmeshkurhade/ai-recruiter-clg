@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.config import settings
-from app.schemas.resume import ResumeResponse, ResumePatchDecision, ResumePatchIntel
+from app.schemas.resume import ResumeResponse, ResumePatchDecision, ResumePatchIntel, ResumeChatRequest, ResumeChatResponse, DraftEmailResponse
 from app.models.resume import Resume
 from app.models.job import JobDescription
 from app.utils.dependencies import get_current_user
@@ -12,6 +12,7 @@ from app.models.user import User
 from app.services.resume_parser import parse_resume
 from app.services.nlp_processor import extract_skills
 from app.services.embedding_service import generate_embedding
+from app.services.llm_features import chat_with_resume, draft_candidate_email
 from app.models.audit_log import AuditLog
 from app.models.match_result import MatchResult
 from app.models.settings import UserSettings
@@ -198,3 +199,59 @@ def update_intel_notes(
     db.commit()
     db.refresh(resume)
     return resume
+
+@router.post("/{resume_id}/chat", response_model=ResumeChatResponse)
+def chat_with_candidate_resume(
+    resume_id: int,
+    data: ResumeChatRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    resume = db.query(Resume).filter(Resume.id == resume_id).first()
+    if not resume:
+        raise HTTPException(status_code=404, detail="Resume not found")
+        
+    job = db.query(JobDescription).filter(JobDescription.id == resume.job_id).first()
+    if not job or job.recruiter_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Not authorized")
+        
+    # Mask identity if needed
+    settings_obj = db.query(UserSettings).filter(UserSettings.user_id == current_user.id).first()
+    masking_enabled = settings_obj and settings_obj.identity_masking
+    is_fast_tracked = resume.decision_node == "ENGAGE_FAST_TRACK"
+    
+    raw_text = resume.raw_text
+    if masking_enabled and not is_fast_tracked:
+        _, raw_text = apply_identity_mask(resume.parsed_data or {}, resume.raw_text)
+
+    response_text = chat_with_resume(raw_text, data.prompt)
+    return {"response": response_text}
+
+@router.post("/{resume_id}/draft_email", response_model=DraftEmailResponse)
+def draft_email_for_candidate(
+    resume_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    resume = db.query(Resume).filter(Resume.id == resume_id).first()
+    if not resume:
+        raise HTTPException(status_code=404, detail="Resume not found")
+        
+    job = db.query(JobDescription).filter(JobDescription.id == resume.job_id).first()
+    if not job or job.recruiter_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Not authorized")
+        
+    match_res = db.query(MatchResult).filter(MatchResult.resume_id == resume_id).first()
+    llm_reason = match_res.llm_reason if match_res else "No specific AI evaluation found."
+    
+    candidate_name = resume.parsed_data.get("name", f"Candidate {resume_id}") if resume.parsed_data else f"Candidate {resume_id}"
+    
+    email_data = draft_candidate_email(
+        candidate_name=candidate_name,
+        job_title=job.title,
+        decision_node=resume.decision_node or "AWAITING_REVIEW",
+        llm_reason=llm_reason
+    )
+    
+    return email_data
+
